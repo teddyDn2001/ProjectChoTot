@@ -193,9 +193,30 @@ if page == "🏠 Trang chủ":
     
     with status_col3:
         if sample_data is not None:
-            st.success(f"✅ Data: {len(sample_data)} records")
+            st.success(f"✅ Data: {len(sample_data):,} records")
         else:
             st.error(f"❌ Data: {data_err or 'Chưa load'}")
+    
+    st.markdown("---")
+    st.markdown("### 👤 Thông tin tác giả")
+    
+    author_col1, author_col2 = st.columns(2)
+    
+    with author_col1:
+        st.markdown("""
+        **👨‍💻 Tác giả:** Đoàn Anh  
+        **📧 Email:** [Email của bạn]  
+        **🔗 GitHub:** [teddyDn2001](https://github.com/teddyDn2001)  
+        **📚 Repository:** [ProjectChoTot](https://github.com/teddyDn2001/ProjectChoTot)
+        """)
+    
+    with author_col2:
+        st.markdown("""
+        **🎓 Đồ án:** Data Science  
+        **📊 Dataset:** Chợ Tốt - 7,208 tin rao bán xe máy  
+        **🏍️ Phạm vi:** TP.HCM  
+        **📅 Năm:** 2024
+        """)
 
 # Price Prediction page
 elif page == "💰 Dự đoán giá":
