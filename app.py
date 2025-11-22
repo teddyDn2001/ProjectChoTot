@@ -450,14 +450,265 @@ elif page == "📊 Phân cụm dữ liệu":
     st.title("📊 Phân cụm dữ liệu")
     st.markdown("Visualize clustering results từ project2")
     
-    st.info("Tính năng này cần load clustering models từ project2.")
-    st.markdown("""
-    ### Các tính năng sẽ có:
-    - KMeans clustering visualization
-    - Gaussian Mixture Model
-    - Agglomerative Clustering
-    - PySpark clustering results
-    """)
+    sample_data, data_error = load_sample_data()
+    
+    if data_error:
+        st.error(data_error)
+    else:
+        st.info(f"📊 Đang load {len(sample_data)} records từ dữ liệu")
+        
+        # Import clustering functions
+        from sklearn.cluster import KMeans, AgglomerativeClustering
+        from sklearn.mixture import GaussianMixture
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.metrics.pairwise import cosine_similarity
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        
+        tab1, tab2, tab3 = st.tabs(["🔍 Clustering", "📊 Content-Based Filtering", "📈 Visualization"])
+        
+        with tab1:
+            st.subheader("🔍 Phân cụm dữ liệu")
+            
+            # Prepare data for clustering
+            @st.cache_data
+            def prepare_clustering_data(df):
+                """Prepare numeric features for clustering"""
+                try:
+                    # Select numeric columns
+                    numeric_cols = []
+                    if 'Năm đăng ký' in df.columns:
+                        numeric_cols.append('Năm đăng ký')
+                    if 'Số Km đã đi' in df.columns:
+                        numeric_cols.append('Số Km đã đi')
+                    
+                    # Parse price
+                    from utils import parse_price
+                    df_clean = df.copy()
+                    if 'Giá' in df_clean.columns:
+                        df_clean['price_parsed'] = df_clean['Giá'].apply(parse_price)
+                        numeric_cols.append('price_parsed')
+                    
+                    # One-hot encode categorical
+                    if 'Thương hiệu' in df_clean.columns:
+                        df_encoded = pd.get_dummies(df_clean['Thương hiệu'], prefix='brand')
+                        df_clean = pd.concat([df_clean, df_encoded], axis=1)
+                        numeric_cols.extend(df_encoded.columns.tolist())
+                    
+                    # Select and clean
+                    X = df_clean[numeric_cols].fillna(0)
+                    
+                    # Scale
+                    scaler = StandardScaler()
+                    X_scaled = scaler.fit_transform(X)
+                    
+                    return X_scaled, df_clean, scaler
+                except Exception as e:
+                    return None, None, None
+            
+            X_scaled, df_clean, scaler = prepare_clustering_data(sample_data)
+            
+            if X_scaled is not None:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    n_clusters = st.slider("Số cụm (k)", min_value=2, max_value=10, value=5)
+                    algorithm = st.selectbox(
+                        "Thuật toán clustering",
+                        ["KMeans", "Gaussian Mixture Model (GMM)", "Agglomerative Clustering"]
+                    )
+                
+                with col2:
+                    max_samples = st.slider("Số mẫu tối đa", min_value=100, max_value=min(1000, len(sample_data)), value=min(500, len(sample_data)))
+                
+                if st.button("🚀 Chạy Clustering", use_container_width=True):
+                    with st.spinner("Đang chạy clustering..."):
+                        # Sample data if too large
+                        if len(X_scaled) > max_samples:
+                            indices = np.random.choice(len(X_scaled), max_samples, replace=False)
+                            X_sample = X_scaled[indices]
+                            df_sample = df_clean.iloc[indices].copy()
+                        else:
+                            X_sample = X_scaled
+                            df_sample = df_clean.copy()
+                        
+                        # Run clustering
+                        if algorithm == "KMeans":
+                            model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+                            labels = model.fit_predict(X_sample)
+                        elif algorithm == "Gaussian Mixture Model (GMM)":
+                            model = GaussianMixture(n_components=n_clusters, random_state=42)
+                            labels = model.fit_predict(X_sample)
+                        else:  # Agglomerative
+                            model = AgglomerativeClustering(n_clusters=n_clusters, linkage='ward')
+                            labels = model.fit_predict(X_sample)
+                        
+                        # Calculate metrics
+                        if len(np.unique(labels)) >= 2:
+                            sil_score = silhouette_score(X_sample, labels)
+                            db_score = davies_bouldin_score(X_sample, labels)
+                            ch_score = calinski_harabasz_score(X_sample, labels)
+                        else:
+                            sil_score = db_score = ch_score = np.nan
+                        
+                        # Display results
+                        st.success(f"✅ Hoàn thành clustering với {algorithm}")
+                        
+                        # Metrics
+                        metric_col1, metric_col2, metric_col3 = st.columns(3)
+                        with metric_col1:
+                            st.metric("Silhouette Score", f"{sil_score:.4f}" if not np.isnan(sil_score) else "N/A")
+                        with metric_col2:
+                            st.metric("Davies-Bouldin Score", f"{db_score:.4f}" if not np.isnan(db_score) else "N/A")
+                        with metric_col3:
+                            st.metric("Calinski-Harabasz Score", f"{ch_score:.4f}" if not np.isnan(ch_score) else "N/A")
+                        
+                        # Cluster summary
+                        df_sample['cluster'] = labels
+                        st.subheader("📊 Tóm tắt các cụm")
+                        
+                        cluster_summary = []
+                        for cluster_id in range(n_clusters):
+                            cluster_data = df_sample[df_sample['cluster'] == cluster_id]
+                            if len(cluster_data) > 0:
+                                price_col = 'price_parsed' if 'price_parsed' in cluster_data.columns else 'Giá'
+                                year_col = 'Năm đăng ký' if 'Năm đăng ký' in cluster_data.columns else None
+                                
+                                prices = cluster_data[price_col].dropna()
+                                years = cluster_data[year_col].dropna() if year_col else pd.Series()
+                                
+                                brand_counts = cluster_data['Thương hiệu'].value_counts().head(3) if 'Thương hiệu' in cluster_data.columns else {}
+                                
+                                cluster_summary.append({
+                                    'Cụm': cluster_id,
+                                    'Số lượng': len(cluster_data),
+                                    'Giá TB (triệu)': f"{prices.mean():.2f}" if len(prices) > 0 else "N/A",
+                                    'Năm TB': f"{years.mean():.0f}" if len(years) > 0 else "N/A",
+                                    'Thương hiệu phổ biến': ", ".join(brand_counts.index.tolist()[:3]) if len(brand_counts) > 0 else "N/A"
+                                })
+                        
+                        summary_df = pd.DataFrame(cluster_summary)
+                        st.dataframe(summary_df, use_container_width=True, hide_index=True)
+                        
+                        # Show samples from each cluster
+                        st.subheader("🔍 Mẫu từ các cụm")
+                        selected_cluster = st.selectbox("Chọn cụm để xem", range(n_clusters))
+                        cluster_samples = df_sample[df_sample['cluster'] == selected_cluster]
+                        
+                        display_cols = ['Tiêu đề', 'Giá', 'Thương hiệu', 'Năm đăng ký']
+                        available_cols = [col for col in display_cols if col in cluster_samples.columns]
+                        st.dataframe(
+                            cluster_samples[available_cols].head(20),
+                            use_container_width=True,
+                            hide_index=True
+                        )
+            else:
+                st.error("Không thể chuẩn bị dữ liệu cho clustering. Kiểm tra lại dữ liệu.")
+        
+        with tab2:
+            st.subheader("📊 Content-Based Filtering")
+            st.markdown("Tìm xe tương tự dựa trên nội dung (thương hiệu, giá, năm, mô tả)")
+            
+            if sample_data is not None and len(sample_data) > 0:
+                # Select a bike
+                st.markdown("### Chọn xe để tìm các xe tương tự")
+                
+                if 'Tiêu đề' in sample_data.columns:
+                    bike_options = sample_data['Tiêu đề'].head(50).tolist()
+                    selected_bike_title = st.selectbox("Chọn xe", bike_options)
+                    selected_bike = sample_data[sample_data['Tiêu đề'] == selected_bike_title].iloc[0]
+                else:
+                    st.warning("Không có cột 'Tiêu đề' trong dữ liệu")
+                    selected_bike = None
+                
+                if selected_bike is not None:
+                    top_n = st.slider("Số xe tương tự", min_value=1, max_value=20, value=5)
+                    
+                    if st.button("🔍 Tìm xe tương tự", use_container_width=True):
+                        with st.spinner("Đang tính toán similarity..."):
+                            # Prepare features for content-based
+                            def prepare_content_features(df):
+                                features = []
+                                for idx, row in df.iterrows():
+                                    feature_vec = []
+                                    
+                                    # Brand (one-hot like)
+                                    if 'Thương hiệu' in row:
+                                        brand = str(row['Thương hiệu']).lower()
+                                        feature_vec.append(hash(brand) % 1000 / 1000.0)
+                                    else:
+                                        feature_vec.append(0)
+                                    
+                                    # Price (normalized)
+                                    from utils import parse_price
+                                    price = parse_price(row.get('Giá', 0))
+                                    if price:
+                                        feature_vec.append(price / 100.0)  # Normalize
+                                    else:
+                                        feature_vec.append(0)
+                                    
+                                    # Year (normalized)
+                                    year = row.get('Năm đăng ký', 0)
+                                    if pd.notna(year) and year > 0:
+                                        feature_vec.append((year - 2000) / 25.0)  # Normalize
+                                    else:
+                                        feature_vec.append(0)
+                                    
+                                    # KM (normalized)
+                                    km = row.get('Số Km đã đi', 0)
+                                    if pd.notna(km) and km > 0:
+                                        feature_vec.append(km / 100000.0)  # Normalize
+                                    else:
+                                        feature_vec.append(0)
+                                    
+                                    features.append(feature_vec)
+                                
+                                return np.array(features)
+                            
+                            # Get features for all bikes
+                            all_features = prepare_content_features(sample_data)
+                            selected_idx = sample_data[sample_data['Tiêu đề'] == selected_bike_title].index[0]
+                            selected_features = all_features[selected_idx:selected_idx+1]
+                            
+                            # Calculate cosine similarity
+                            similarities = cosine_similarity(selected_features, all_features)[0]
+                            
+                            # Get top N similar (exclude itself)
+                            similar_indices = np.argsort(similarities)[::-1][1:top_n+1]
+                            
+                            # Display results
+                            st.success(f"✅ Tìm thấy {len(similar_indices)} xe tương tự")
+                            
+                            for i, idx in enumerate(similar_indices, 1):
+                                similar_bike = sample_data.iloc[idx]
+                                similarity = similarities[idx]
+                                
+                                with st.container():
+                                    cols = st.columns([1, 3, 1, 1])
+                                    with cols[0]:
+                                        st.write(f"**#{i}**")
+                                        st.progress(similarity)
+                                    with cols[1]:
+                                        title = similar_bike.get('Tiêu đề', 'N/A')
+                                        st.write(f"**{title}**")
+                                    with cols[2]:
+                                        from utils import format_price, parse_price
+                                        price = parse_price(similar_bike.get('Giá', 0))
+                                        st.write(format_price(price))
+                                    with cols[3]:
+                                        st.write(f"Similarity: {similarity:.3f}")
+                                    st.divider()
+        
+        with tab3:
+            st.subheader("📈 Visualization")
+            st.markdown("Biểu đồ phân cụm (cần chạy clustering trước)")
+            
+            if 'cluster' in st.session_state:
+                st.info("Tính năng visualization đang phát triển. Sẽ hiển thị biểu đồ phân cụm 2D/3D.")
+            else:
+                st.info("💡 Chạy clustering ở tab 'Clustering' trước để xem visualization")
 
 # Footer
 st.sidebar.markdown("---")
