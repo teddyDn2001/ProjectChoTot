@@ -86,7 +86,13 @@ def load_anomaly_model():
         if not ISO_MODEL_PATH.exists() or not PREPROCESSOR_PATH.exists():
             return None, None, "Models chưa được train."
         
-        iso_model = joblib.load(ISO_MODEL_PATH)
+        iso_data = joblib.load(ISO_MODEL_PATH)
+        # Check if it's a dict (saved with metadata) or direct model
+        if isinstance(iso_data, dict):
+            iso_model = iso_data.get('model', iso_data.get('iso_model', iso_data))
+        else:
+            iso_model = iso_data
+        
         preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         preprocessor = preprocessor_data['preprocessor']
         return iso_model, preprocessor, None
