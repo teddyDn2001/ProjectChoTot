@@ -229,7 +229,7 @@ elif page == "💰 Dự đoán giá":
             
             if submitted:
                 try:
-                    # Get feature names from preprocessor
+                    # Get feature names from preprocessor - MUST use exact order
                     from project1.config import PREPROCESSOR_PATH
                     import joblib
                     preprocessor_data = joblib.load(PREPROCESSOR_PATH)
@@ -241,9 +241,11 @@ elif page == "💰 Dự đoán giá":
                         numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
                         categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
                     
-                    # Prepare input data with correct column order
+                    # CRITICAL: Use exact feature order that preprocessor expects
                     all_features = numeric_features + categorical_features
-                    input_dict = {
+                    
+                    # Prepare input data - must match exact column names and order
+                    input_data = pd.DataFrame({
                         'so_km': [so_km],
                         'nam_dang_ky': [nam_dang_ky],
                         'dung_tich_cc': [dung_tich_cc],
@@ -257,11 +259,7 @@ elif page == "💰 Dự đoán giá":
                         'xuat_xu': [xuat_xu],
                         'tinh_thanh': [tinh_thanh],
                         'quan': [quan if quan else ""]
-                    }
-                    
-                    # Create DataFrame with only available features
-                    available_features = [f for f in all_features if f in input_dict]
-                    input_data = pd.DataFrame({f: input_dict[f] for f in available_features})
+                    }, columns=all_features)  # Ensure correct column order
                     
                     # Transform and predict
                     X_transformed = preprocessor.transform(input_data)
@@ -317,7 +315,7 @@ elif page == "🚨 Phát hiện bất thường":
             
             if submitted:
                 try:
-                    # Get feature names
+                    # Get feature names - MUST use exact order
                     from project1.config import PREPROCESSOR_PATH
                     import joblib
                     preprocessor_data = joblib.load(PREPROCESSOR_PATH)
@@ -328,9 +326,11 @@ elif page == "🚨 Phát hiện bất thường":
                         numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
                         categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
                     
-                    # Prepare input with correct columns
+                    # CRITICAL: Use exact feature order that preprocessor expects
                     all_features = numeric_features + categorical_features
-                    input_dict = {
+                    
+                    # Prepare input with correct columns and order
+                    input_data = pd.DataFrame({
                         'so_km': [so_km],
                         'nam_dang_ky': [nam_dang_ky],
                         'dung_tich_cc': [dung_tich_cc],
@@ -344,11 +344,7 @@ elif page == "🚨 Phát hiện bất thường":
                         'xuat_xu': ["Việt Nam"],
                         'tinh_thanh': ["Hồ Chí Minh"],
                         'quan': [""]
-                    }
-                    
-                    # Create DataFrame with available features
-                    available_features = [f for f in all_features if f in input_dict]
-                    input_data = pd.DataFrame({f: input_dict[f] for f in available_features})
+                    }, columns=all_features)  # Ensure correct column order
                     
                     # Transform
                     X_transformed = preprocessor.transform(input_data)
