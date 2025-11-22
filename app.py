@@ -656,12 +656,37 @@ elif page == "📊 Phân cụm dữ liệu":
                         for cluster_id in range(n_clusters):
                             cluster_data = df_sample[df_sample['cluster'] == cluster_id]
                             if len(cluster_data) > 0:
-                                price_col = 'price_parsed' if 'price_parsed' in cluster_data.columns else 'Giá'
-                                year_col = 'Năm đăng ký' if 'Năm đăng ký' in cluster_data.columns else None
+                                # Get prices
+                                if 'price_parsed' in cluster_data.columns:
+                                    prices = cluster_data['price_parsed'].dropna()
+                                elif 'Giá' in cluster_data.columns:
+                                    from utils import parse_price
+                                    prices = cluster_data['Giá'].apply(parse_price).dropna()
+                                else:
+                                    prices = pd.Series()
                                 
-                                prices = cluster_data[price_col].dropna()
-                                years = cluster_data[year_col].dropna() if year_col else pd.Series()
+                                # Get years (use parsed year if available)
+                                if 'year_parsed' in cluster_data.columns:
+                                    years = cluster_data['year_parsed'].dropna()
+                                    years = years[years > 0]  # Remove invalid years
+                                elif 'Năm đăng ký' in cluster_data.columns:
+                                    def safe_parse_year(v):
+                                        try:
+                                            import re
+                                            if pd.isna(v):
+                                                return None
+                                            match = re.search(r'\d{4}', str(v))
+                                            if match:
+                                                y = int(match.group())
+                                                return y if 1990 <= y <= 2025 else None
+                                            return None
+                                        except:
+                                            return None
+                                    years = cluster_data['Năm đăng ký'].apply(safe_parse_year).dropna()
+                                else:
+                                    years = pd.Series()
                                 
+                                # Get brands
                                 brand_counts = cluster_data['Thương hiệu'].value_counts().head(3) if 'Thương hiệu' in cluster_data.columns else {}
                                 
                                 cluster_summary.append({
