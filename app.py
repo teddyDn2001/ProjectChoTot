@@ -261,14 +261,22 @@ elif page == "💰 Dự đoán giá":
                         'quan': [quan if quan else ""]
                     }, columns=all_features)  # Ensure correct column order
                     
-                    # Transform and predict
-                    X_transformed = preprocessor.transform(input_data)
+                    # Check if model is a Pipeline (contains preprocessor)
+                    from sklearn.pipeline import Pipeline
+                    is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
                     
-                    # Handle sparse matrix
-                    if hasattr(X_transformed, 'toarray'):
-                        X_transformed = X_transformed.toarray()
-                    
-                    prediction = model.predict(X_transformed)[0]
+                    if is_pipeline:
+                        # Model already includes preprocessor, use raw input (13 features)
+                        prediction = model.predict(input_data)[0]
+                    else:
+                        # Model needs transformed input (278 features)
+                        X_transformed = preprocessor.transform(input_data)
+                        
+                        # Handle sparse matrix
+                        if hasattr(X_transformed, 'toarray'):
+                            X_transformed = X_transformed.toarray()
+                        
+                        prediction = model.predict(X_transformed)[0]
                     
                     # Validate prediction
                     if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
@@ -807,24 +815,76 @@ elif page == "📊 Phân cụm dữ liệu":
         
         with tab2:
             st.subheader("📊 Content-Based Filtering")
-            st.markdown("Tìm xe tương tự dựa trên nội dung (thương hiệu, giá, năm, mô tả)")
+            st.markdown("Tìm xe tương tự dựa trên nội dung (thương hiệu, giá, năm, số km)")
             
             if sample_data is not None and len(sample_data) > 0:
-                # Select a bike
-                st.markdown("### Chọn xe để tìm các xe tương tự")
+                # Choose input method
+                input_method = st.radio(
+                    "Cách nhập thông tin:",
+                    ["📝 Nhập thông tin trực tiếp", "🔍 Chọn từ danh sách xe"],
+                    horizontal=True
+                )
                 
-                if 'Tiêu đề' in sample_data.columns:
-                    bike_options = sample_data['Tiêu đề'].head(50).tolist()
-                    selected_bike_title = st.selectbox("Chọn xe", bike_options)
-                    selected_bike = sample_data[sample_data['Tiêu đề'] == selected_bike_title].iloc[0]
-                else:
-                    st.warning("Không có cột 'Tiêu đề' trong dữ liệu")
-                    selected_bike = None
+                selected_bike = None
+                
+                if input_method == "📝 Nhập thông tin trực tiếp":
+                    st.markdown("### Nhập thông tin xe")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        cbf_thuong_hieu = st.selectbox(
+                            "Thương hiệu",
+                            ["Tất cả"] + sorted(sample_data['Thương hiệu'].dropna().unique().tolist()) if 'Thương hiệu' in sample_data.columns else ["Tất cả"],
+                            key="cbf_brand"
+                        )
+                        cbf_gia = st.number_input(
+                            "Giá (triệu VNĐ)",
+                            min_value=0.0,
+                            max_value=1000.0,
+                            value=50.0,
+                            step=1.0,
+                            key="cbf_price"
+                        )
+                    
+                    with col2:
+                        cbf_nam = st.number_input(
+                            "Năm sản xuất",
+                            min_value=1990,
+                            max_value=2024,
+                            value=2020,
+                            key="cbf_year"
+                        )
+                        cbf_km = st.number_input(
+                            "Số km đã đi",
+                            min_value=0,
+                            value=10000,
+                            key="cbf_km"
+                        )
+                    
+                    # Create a dummy bike dict for similarity calculation
+                    selected_bike = {
+                        'Thương hiệu': cbf_thuong_hieu if cbf_thuong_hieu != "Tất cả" else "Honda",
+                        'Giá': f"{cbf_gia} triệu",
+                        'Năm đăng ký': cbf_nam,
+                        'Số Km đã đi': cbf_km,
+                        'Tiêu đề': f"Xe {cbf_thuong_hieu} {cbf_nam}"
+                    }
+                
+                else:  # Chọn từ danh sách
+                    st.markdown("### Chọn xe để tìm các xe tương tự")
+                    
+                    if 'Tiêu đề' in sample_data.columns:
+                        bike_options = sample_data['Tiêu đề'].head(50).tolist()
+                        selected_bike_title = st.selectbox("Chọn xe", bike_options, key="cbf_select_bike")
+                        selected_bike = sample_data[sample_data['Tiêu đề'] == selected_bike_title].iloc[0].to_dict()
+                    else:
+                        st.warning("Không có cột 'Tiêu đề' trong dữ liệu")
+                        selected_bike = None
                 
                 if selected_bike is not None:
-                    top_n = st.slider("Số xe tương tự", min_value=1, max_value=20, value=5)
+                    top_n = st.slider("Số xe tương tự", min_value=1, max_value=20, value=5, key="cbf_top_n")
                     
-                    if st.button("🔍 Tìm xe tương tự", use_container_width=True):
+                    if st.button("🔍 Tìm xe tương tự", use_container_width=True, key="cbf_search"):
                         with st.spinner("Đang tính toán similarity..."):
                             # Prepare features for content-based
                             def prepare_content_features(df):
