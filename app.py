@@ -563,8 +563,14 @@ elif page == "🔍 Gợi ý xe tương tự":
 
 # Clustering page
 elif page == "📊 Phân cụm dữ liệu":
-    st.title("📊 Phân cụm dữ liệu")
-    st.markdown("Visualize clustering results từ project2")
+    st.title("📊 Phân cụm dữ liệu - Phân khúc thị trường xe máy")
+    st.markdown("""
+    **Phân cụm dữ liệu giúp:**
+    - 🎯 Phân khúc thị trường: Chia xe máy thành các nhóm có đặc điểm tương đồng
+    - 👥 Hiểu khách hàng: Mỗi phân khúc đại diện cho một nhóm khách hàng khác nhau
+    - 💰 Định giá hợp lý: Biết xe thuộc phân khúc nào để định giá phù hợp
+    - 🔍 Gợi ý sản phẩm: Đề xuất xe tương tự trong cùng phân khúc
+    """)
     
     sample_data, data_error = load_sample_data()
     
@@ -822,18 +828,102 @@ elif page == "📊 Phân cụm dữ liệu":
                         summary_df = pd.DataFrame(cluster_summary)
                         st.dataframe(summary_df, use_container_width=True, hide_index=True)
                         
-                        # Show samples from each cluster
-                        st.subheader("🔍 Mẫu từ các cụm")
-                        selected_cluster = st.selectbox("Chọn cụm để xem", range(n_clusters))
-                        cluster_samples = df_sample[df_sample['cluster'] == selected_cluster]
+                        # Cluster insights and recommendations
+                        st.subheader("💡 Phân tích và Gợi ý cho từng phân khúc")
                         
-                        display_cols = ['Tiêu đề', 'Giá', 'Thương hiệu', 'Năm đăng ký']
-                        available_cols = [col for col in display_cols if col in cluster_samples.columns]
-                        st.dataframe(
-                            cluster_samples[available_cols].head(20),
-                            use_container_width=True,
-                            hide_index=True
-                        )
+                        for cluster_id in range(n_clusters):
+                            cluster_data = df_sample[df_sample['cluster'] == cluster_id]
+                            if len(cluster_data) > 0:
+                                with st.expander(f"📊 Phân khúc {cluster_id} - {len(cluster_data)} xe", expanded=(cluster_id == 0)):
+                                    # Get statistics
+                                    if 'price_parsed' in cluster_data.columns:
+                                        prices = cluster_data['price_parsed'].dropna()
+                                    elif 'Giá' in cluster_data.columns:
+                                        from utils import parse_price
+                                        prices = cluster_data['Giá'].apply(parse_price).dropna()
+                                    else:
+                                        prices = pd.Series()
+                                    
+                                    if 'year_parsed' in cluster_data.columns:
+                                        years = cluster_data['year_parsed'].dropna()
+                                        years = years[years > 0]
+                                    elif 'Năm đăng ký' in cluster_data.columns:
+                                        def safe_parse_year(v):
+                                            try:
+                                                import re
+                                                if pd.isna(v):
+                                                    return None
+                                                match = re.search(r'\d{4}', str(v))
+                                                if match:
+                                                    y = int(match.group())
+                                                    return y if 1990 <= y <= 2025 else None
+                                                return None
+                                            except:
+                                                return None
+                                        years = cluster_data['Năm đăng ký'].apply(safe_parse_year).dropna()
+                                    else:
+                                        years = pd.Series()
+                                    
+                                    brand_counts = cluster_data['Thương hiệu'].value_counts().head(5) if 'Thương hiệu' in cluster_data.columns else {}
+                                    
+                                    # Display insights
+                                    col1, col2, col3 = st.columns(3)
+                                    with col1:
+                                        if len(prices) > 0:
+                                            avg_price = prices.mean()
+                                            st.metric("💰 Giá trung bình", f"{avg_price:.1f} triệu VNĐ")
+                                            st.caption(f"Khoảng: {prices.min():.1f} - {prices.max():.1f} triệu")
+                                    with col2:
+                                        if len(years) > 0:
+                                            avg_year = years.mean()
+                                            st.metric("📅 Năm trung bình", f"{avg_year:.0f}")
+                                            st.caption(f"Khoảng: {years.min():.0f} - {years.max():.0f}")
+                                    with col3:
+                                        st.metric("📊 Số lượng", f"{len(cluster_data)} xe")
+                                        st.caption(f"Tỷ lệ: {len(cluster_data)/len(df_sample)*100:.1f}%")
+                                    
+                                    # Brand distribution
+                                    if len(brand_counts) > 0:
+                                        st.markdown("**🏍️ Thương hiệu phổ biến:**")
+                                        brand_text = ", ".join([f"{brand} ({count})" for brand, count in brand_counts.items()])
+                                        st.info(brand_text)
+                                    
+                                    # Characterize cluster
+                                    st.markdown("**🎯 Đặc điểm phân khúc:**")
+                                    if len(prices) > 0 and len(years) > 0:
+                                        avg_price_val = prices.mean()
+                                        avg_year_val = years.mean()
+                                        
+                                        # Determine segment
+                                        if avg_price_val < 20:
+                                            segment = "💰 **Phân khúc giá rẻ** - Phù hợp cho người mua có ngân sách hạn chế"
+                                        elif avg_price_val < 40:
+                                            segment = "🏠 **Phân khúc tầm trung** - Phù hợp cho người dùng phổ thông"
+                                        elif avg_price_val < 70:
+                                            segment = "⭐ **Phân khúc cao cấp** - Phù hợp cho người dùng có thu nhập tốt"
+                                        else:
+                                            segment = "💎 **Phân khúc siêu cao cấp** - Phù hợp cho người dùng cao cấp"
+                                        
+                                        st.markdown(segment)
+                                        
+                                        # Recommendations
+                                        st.markdown("**💡 Gợi ý:**")
+                                        if avg_year_val >= 2020:
+                                            st.info("✅ Xe mới, phù hợp cho người muốn xe đời mới, ít phải sửa chữa")
+                                        elif avg_year_val >= 2015:
+                                            st.info("✅ Xe đời trung, cân bằng giữa giá và chất lượng")
+                                        else:
+                                            st.info("✅ Xe đời cũ, giá rẻ nhưng cần kiểm tra kỹ trước khi mua")
+                                    
+                                    # Show samples
+                                    st.markdown("**🔍 Mẫu xe trong phân khúc:**")
+                                    display_cols = ['Tiêu đề', 'Giá', 'Thương hiệu', 'Năm đăng ký']
+                                    available_cols = [col for col in display_cols if col in cluster_data.columns]
+                                    st.dataframe(
+                                        cluster_data[available_cols].head(10),
+                                        use_container_width=True,
+                                        hide_index=True
+                                    )
             else:
                 st.error("Không thể chuẩn bị dữ liệu cho clustering. Kiểm tra lại dữ liệu.")
         
@@ -1042,8 +1132,14 @@ elif page == "📊 Phân cụm dữ liệu":
                                     st.divider()
         
         with tab3:
-            st.subheader("📈 Visualization")
-            st.markdown("Biểu đồ phân cụm (cần chạy clustering trước)")
+            st.subheader("📈 Visualization - Trực quan hóa phân khúc")
+            st.markdown("""
+            **Biểu đồ giúp hiểu rõ:**
+            - 📊 Phân bố số lượng xe trong mỗi phân khúc
+            - 💰 Phân bố giá theo phân khúc
+            - 📅 Phân bố năm sản xuất
+            - 🎯 Vị trí các cụm trong không gian 2D
+            """)
             
             if 'cluster_labels' in st.session_state and 'cluster_data' in st.session_state:
                 try:
