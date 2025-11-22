@@ -1108,27 +1108,54 @@ elif page == "📊 Phân cụm dữ liệu":
                                 st.error("Không thể tính toán similarity")
                                 similar_indices = []
                             
-                            # Display results
+                            # Display results with better UX
                             st.success(f"✅ Tìm thấy {len(similar_indices)} xe tương tự")
+                            
+                            # Show selected bike info
+                            if input_method == "📝 Nhập thông tin trực tiếp":
+                                st.info(f"🔍 Đang tìm xe tương tự với: {selected_bike.get('Thương hiệu', 'N/A')}, {selected_bike.get('Giá', 'N/A')}, năm {selected_bike.get('Năm đăng ký', 'N/A')}")
+                            else:
+                                st.info(f"🔍 Đang tìm xe tương tự với: {selected_bike.get('Tiêu đề', 'N/A')}")
+                            
+                            st.markdown("### 🎯 Kết quả tìm kiếm")
                             
                             for i, idx in enumerate(similar_indices, 1):
                                 similar_bike = sample_data.iloc[idx]
                                 similarity = similarities[idx]
                                 
+                                # Create a card-like display
                                 with st.container():
-                                    cols = st.columns([1, 3, 1, 1])
-                                    with cols[0]:
-                                        st.write(f"**#{i}**")
-                                        st.progress(similarity)
-                                    with cols[1]:
+                                    # Header with rank and similarity
+                                    header_cols = st.columns([1, 4, 1])
+                                    with header_cols[0]:
+                                        st.markdown(f"### #{i}")
+                                    with header_cols[1]:
                                         title = similar_bike.get('Tiêu đề', 'N/A')
-                                        st.write(f"**{title}**")
-                                    with cols[2]:
+                                        st.markdown(f"**{title}**")
+                                    with header_cols[2]:
+                                        similarity_pct = similarity * 100
+                                        st.metric("Độ tương đồng", f"{similarity_pct:.1f}%")
+                                    
+                                    # Details in columns
+                                    detail_cols = st.columns(4)
+                                    with detail_cols[0]:
                                         from utils import format_price, parse_price
                                         price = parse_price(similar_bike.get('Giá', 0))
-                                        st.write(format_price(price))
-                                    with cols[3]:
-                                        st.write(f"Similarity: {similarity:.3f}")
+                                        st.metric("💰 Giá", format_price(price))
+                                    with detail_cols[1]:
+                                        brand = similar_bike.get('Thương hiệu', 'N/A')
+                                        st.metric("🏍️ Thương hiệu", brand)
+                                    with detail_cols[2]:
+                                        year = similar_bike.get('Năm đăng ký', 'N/A')
+                                        st.metric("📅 Năm", str(year)[:4] if isinstance(year, (int, float)) else str(year)[:4] if len(str(year)) >= 4 else 'N/A')
+                                    with detail_cols[3]:
+                                        km = similar_bike.get('Số Km đã đi', 'N/A')
+                                        st.metric("🛣️ Số km", f"{km:,}" if isinstance(km, (int, float)) else str(km))
+                                    
+                                    # Similarity bar
+                                    st.progress(similarity)
+                                    st.caption(f"Độ tương đồng: {similarity:.1%}")
+                                    
                                     st.divider()
         
         with tab3:
@@ -1189,7 +1216,7 @@ elif page == "📊 Phân cụm dữ liệu":
                     
                     # 2D visualization if we have features
                     if X_vis is not None and X_vis.shape[1] >= 2:
-                        st.markdown("### 📈 Biểu đồ 2D (PCA)")
+                        st.markdown("### 📈 Biểu đồ 2D - Vị trí các phân khúc")
                         try:
                             from sklearn.decomposition import PCA
                             
@@ -1197,17 +1224,60 @@ elif page == "📊 Phân cụm dữ liệu":
                             pca = PCA(n_components=2, random_state=42)
                             X_2d = pca.fit_transform(X_vis)
                             
-                            # Create plot
-                            fig, ax = plt.subplots(figsize=(10, 6))
-                            scatter = ax.scatter(X_2d[:, 0], X_2d[:, 1], c=cluster_labels, cmap='viridis', alpha=0.6)
-                            ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} variance)')
-                            ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} variance)')
-                            ax.set_title('Clustering Visualization (PCA)')
-                            plt.colorbar(scatter, ax=ax, label='Cluster')
+                            # Create plot with better styling
+                            fig, ax = plt.subplots(figsize=(12, 8))
+                            
+                            # Use distinct colors for each cluster
+                            colors = plt.cm.Set3(np.linspace(0, 1, len(np.unique(cluster_labels))))
+                            
+                            for cluster_id in np.unique(cluster_labels):
+                                mask = cluster_labels == cluster_id
+                                ax.scatter(
+                                    X_2d[mask, 0], X_2d[mask, 1],
+                                    c=[colors[cluster_id]],
+                                    label=f'Phân khúc {cluster_id}',
+                                    alpha=0.6,
+                                    s=50
+                                )
+                            
+                            ax.set_xlabel(f'Thành phần chính 1 (PC1) - {pca.explained_variance_ratio_[0]:.1%} phương sai', fontsize=10)
+                            ax.set_ylabel(f'Thành phần chính 2 (PC2) - {pca.explained_variance_ratio_[1]:.1%} phương sai', fontsize=10)
+                            ax.set_title('📊 Phân bố các phân khúc trong không gian 2D', fontsize=12, fontweight='bold')
+                            ax.legend(title='Phân khúc', bbox_to_anchor=(1.05, 1), loc='upper left')
+                            ax.grid(True, alpha=0.3)
+                            plt.tight_layout()
                             st.pyplot(fig)
                             plt.close(fig)
+                            
+                            st.caption("💡 Biểu đồ này giúp hiểu vị trí và mối quan hệ giữa các phân khúc. Các điểm gần nhau có đặc điểm tương đồng.")
                         except Exception as e:
                             st.warning(f"Không thể tạo biểu đồ 2D: {str(e)}")
+                    
+                    # Summary insights
+                    st.markdown("---")
+                    st.subheader("📋 Tóm tắt Insights")
+                    
+                    if 'price_parsed' in cluster_data.columns or 'Giá' in cluster_data.columns:
+                        # Price range analysis
+                        all_prices = []
+                        for cluster_id in range(n_clusters):
+                            cluster_subset = cluster_data[cluster_data['cluster'] == cluster_id]
+                            if 'price_parsed' in cluster_subset.columns:
+                                prices = cluster_subset['price_parsed'].dropna()
+                            elif 'Giá' in cluster_subset.columns:
+                                from utils import parse_price
+                                prices = cluster_subset['Giá'].apply(parse_price).dropna()
+                            else:
+                                prices = pd.Series()
+                            if len(prices) > 0:
+                                all_prices.append((cluster_id, prices.mean(), len(cluster_subset)))
+                        
+                        if all_prices:
+                            all_prices.sort(key=lambda x: x[1])
+                            st.info(f"💰 **Phân khúc giá rẻ nhất:** Phân khúc {all_prices[0][0]} (giá TB: {all_prices[0][1]:.1f} triệu)")
+                            st.info(f"💎 **Phân khúc giá cao nhất:** Phân khúc {all_prices[-1][0]} (giá TB: {all_prices[-1][1]:.1f} triệu)")
+                    
+                    st.success("✅ Phân cụm hoàn tất! Sử dụng các insights trên để hiểu thị trường và đưa ra quyết định phù hợp.")
                     
                 except Exception as e:
                     st.error(f"Lỗi khi hiển thị visualization: {str(e)}")
