@@ -116,7 +116,7 @@ def load_anomaly_model():
 
 @st.cache_data
 def load_sample_data():
-    """Load sample data for recommendation"""
+    """Load full dataset for recommendation and clustering"""
     try:
         from project2.config import RAW_DATA_FILE, DATA_DIR
         
@@ -130,7 +130,8 @@ def load_sample_data():
         
         for path in possible_paths:
             if path.exists():
-                df = pd.read_csv(path, nrows=1000, low_memory=False)  # Load sample
+                # Load FULL dataset, not just sample
+                df = pd.read_csv(path, low_memory=False)
                 return df, None
         
         return None, f"Không tìm thấy file dữ liệu. Đã thử: {[str(p) for p in possible_paths]}"
@@ -1420,6 +1421,12 @@ elif page == "📊 Phân cụm dữ liệu":
 
 # Footer
 st.sidebar.markdown("---")
+st.sidebar.markdown("### 👤 Thông tin")
+st.sidebar.markdown("""
+**Tác giả:** Đoàn Anh  
+**Đồ án:** Data Science  
+**Dataset:** Chợ Tốt (7.2K+ records)
+""")
 st.sidebar.markdown("### 📚 Tài liệu")
 st.sidebar.markdown("[GitHub Repository](https://github.com/teddyDn2001/ProjectChoTot)")
 st.sidebar.markdown("[README](README.md)")
