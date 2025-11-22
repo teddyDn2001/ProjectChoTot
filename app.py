@@ -69,9 +69,24 @@ def load_price_model():
         if not PRICE_MODEL_PATH.exists() or not PREPROCESSOR_PATH.exists():
             return None, None, "Models chưa được train. Vui lòng chạy notebooks trong project1/ để tạo models."
         
-        model = joblib.load(PRICE_MODEL_PATH)
+        # Load model - check if it's a dict or direct model
+        model_data = joblib.load(PRICE_MODEL_PATH)
+        if isinstance(model_data, dict):
+            # Extract model from dict (could be 'model', 'price_model', or direct)
+            model = model_data.get('model', model_data.get('price_model', model_data))
+            # If still a dict, try to get the actual model object
+            if isinstance(model, dict):
+                model = model.get('model', model)
+        else:
+            model = model_data
+        
+        # Load preprocessor
         preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-        preprocessor = preprocessor_data['preprocessor']
+        if isinstance(preprocessor_data, dict):
+            preprocessor = preprocessor_data['preprocessor']
+        else:
+            preprocessor = preprocessor_data
+        
         return model, preprocessor, None
     except Exception as e:
         return None, None, f"Lỗi khi load model: {str(e)}"
@@ -359,21 +374,17 @@ elif page == "🚨 Phát hiện bất thường":
                             
                             # Show predicted price for comparison
                             try:
-                                from project1.config import PRICE_MODEL_PATH
-                                price_model_data = joblib.load(PRICE_MODEL_PATH)
-                                if isinstance(price_model_data, dict):
-                                    price_model = price_model_data.get('model', price_model_data)
-                                else:
-                                    price_model = price_model_data
-                                
-                                price_pred = price_model.predict(X_transformed)[0]
-                                if price_pred > 0:
-                                    st.info(f"💡 Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ")
-                                    st.info(f"💡 Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ")
-                                    diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
-                                    if diff_pct > 30:
-                                        st.warning(f"⚠️ Chênh lệch {diff_pct:.1f}% so với giá dự đoán - đây là lý do phát hiện bất thường")
-                            except:
+                                price_model, _, _ = load_price_model()
+                                if price_model is not None:
+                                    price_pred = price_model.predict(X_transformed)[0]
+                                    if price_pred > 0:
+                                        st.info(f"💡 Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ")
+                                        st.info(f"💡 Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ")
+                                        diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
+                                        if diff_pct > 30:
+                                            st.warning(f"⚠️ Chênh lệch {diff_pct:.1f}% so với giá dự đoán - đây là lý do phát hiện bất thường")
+                            except Exception as e:
+                                # Silently fail - not critical
                                 pass
                         else:
                             st.success("### ✅ Giá BÌNH THƯỜNG")
