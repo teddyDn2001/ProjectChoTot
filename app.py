@@ -477,35 +477,83 @@ elif page == "📊 Phân cụm dữ liệu":
             def prepare_clustering_data(df):
                 """Prepare numeric features for clustering"""
                 try:
-                    # Select numeric columns
+                    if df is None or len(df) == 0:
+                        return None, None, None
+                    
+                    df_clean = df.copy()
                     numeric_cols = []
-                    if 'Năm đăng ký' in df.columns:
-                        numeric_cols.append('Năm đăng ký')
-                    if 'Số Km đã đi' in df.columns:
-                        numeric_cols.append('Số Km đã đi')
                     
                     # Parse price
                     from utils import parse_price
-                    df_clean = df.copy()
                     if 'Giá' in df_clean.columns:
-                        df_clean['price_parsed'] = df_clean['Giá'].apply(parse_price)
+                        df_clean['price_parsed'] = df_clean['Giá'].apply(lambda x: parse_price(x) if pd.notna(x) else 0)
+                        numeric_cols.append('price_parsed')
+                    elif 'gia_vnd' in df_clean.columns:
+                        df_clean['price_parsed'] = df_clean['gia_vnd'] / 1_000_000
                         numeric_cols.append('price_parsed')
                     
-                    # One-hot encode categorical
+                    # Year
+                    if 'Năm đăng ký' in df_clean.columns:
+                        df_clean['year_parsed'] = pd.to_numeric(df_clean['Năm đăng ký'], errors='coerce').fillna(0)
+                        numeric_cols.append('year_parsed')
+                    elif 'nam_dang_ky' in df_clean.columns:
+                        df_clean['year_parsed'] = pd.to_numeric(df_clean['nam_dang_ky'], errors='coerce').fillna(0)
+                        numeric_cols.append('year_parsed')
+                    
+                    # KM
+                    if 'Số Km đã đi' in df_clean.columns:
+                        df_clean['km_parsed'] = pd.to_numeric(df_clean['Số Km đã đi'], errors='coerce').fillna(0)
+                        numeric_cols.append('km_parsed')
+                    elif 'so_km' in df_clean.columns:
+                        df_clean['km_parsed'] = pd.to_numeric(df_clean['so_km'], errors='coerce').fillna(0)
+                        numeric_cols.append('km_parsed')
+                    
+                    # One-hot encode brand
+                    brand_col = None
                     if 'Thương hiệu' in df_clean.columns:
-                        df_encoded = pd.get_dummies(df_clean['Thương hiệu'], prefix='brand')
-                        df_clean = pd.concat([df_clean, df_encoded], axis=1)
-                        numeric_cols.extend(df_encoded.columns.tolist())
+                        brand_col = 'Thương hiệu'
+                    elif 'thuong_hieu' in df_clean.columns:
+                        brand_col = 'thuong_hieu'
+                    
+                    if brand_col and df_clean[brand_col].notna().sum() > 0:
+                        # Limit to top brands to avoid too many features
+                        top_brands = df_clean[brand_col].value_counts().head(10).index.tolist()
+                        for brand in top_brands:
+                            col_name = f'brand_{brand}'
+                            df_clean[col_name] = (df_clean[brand_col] == brand).astype(int)
+                            numeric_cols.append(col_name)
+                    
+                    # Check if we have enough features
+                    if len(numeric_cols) == 0:
+                        st.warning("Không tìm thấy cột số phù hợp. Thêm các cột mặc định.")
+                        # Add dummy features
+                        df_clean['dummy_feature'] = 1
+                        numeric_cols.append('dummy_feature')
                     
                     # Select and clean
-                    X = df_clean[numeric_cols].fillna(0)
+                    available_cols = [col for col in numeric_cols if col in df_clean.columns]
+                    if len(available_cols) == 0:
+                        return None, None, None
+                    
+                    X = df_clean[available_cols].fillna(0)
+                    
+                    # Remove rows with all zeros
+                    X = X[(X != 0).any(axis=1)]
+                    if len(X) == 0:
+                        return None, None, None
                     
                     # Scale
                     scaler = StandardScaler()
                     X_scaled = scaler.fit_transform(X)
                     
+                    # Update df_clean to match X indices
+                    df_clean = df_clean.loc[X.index].copy()
+                    
                     return X_scaled, df_clean, scaler
                 except Exception as e:
+                    st.error(f"Lỗi khi chuẩn bị dữ liệu: {str(e)}")
+                    import traceback
+                    st.code(traceback.format_exc())
                     return None, None, None
             
             X_scaled, df_clean, scaler = prepare_clustering_data(sample_data)
