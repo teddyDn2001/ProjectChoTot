@@ -650,6 +650,12 @@ elif page == "📊 Phân cụm dữ liệu":
                         
                         # Cluster summary
                         df_sample['cluster'] = labels
+                        
+                        # Store in session state for visualization
+                        st.session_state['cluster_labels'] = labels
+                        st.session_state['cluster_data'] = df_sample
+                        st.session_state['cluster_X'] = X_sample
+                        
                         st.subheader("📊 Tóm tắt các cụm")
                         
                         cluster_summary = []
@@ -739,11 +745,42 @@ elif page == "📊 Phân cụm dữ liệu":
                             # Prepare features for content-based
                             def prepare_content_features(df):
                                 features = []
+                                
+                                # Helper functions
+                                def safe_parse_year(value):
+                                    if pd.isna(value):
+                                        return 0
+                                    try:
+                                        import re
+                                        value_str = str(value).strip()
+                                        year_match = re.search(r'\d{4}', value_str)
+                                        if year_match:
+                                            year = int(year_match.group())
+                                            if 1990 <= year <= 2025:
+                                                return year
+                                        return 0
+                                    except:
+                                        return 0
+                                
+                                def safe_parse_km(value):
+                                    if pd.isna(value):
+                                        return 0
+                                    try:
+                                        import re
+                                        value_str = str(value).strip().lower()
+                                        value_str = value_str.replace('km', '').replace(',', '').replace('.', '').strip()
+                                        numbers = re.findall(r'\d+', value_str)
+                                        if numbers:
+                                            return float(''.join(numbers))
+                                        return 0
+                                    except:
+                                        return 0
+                                
                                 for idx, row in df.iterrows():
                                     feature_vec = []
                                     
                                     # Brand (one-hot like)
-                                    if 'Thương hiệu' in row:
+                                    if 'Thương hiệu' in row and pd.notna(row['Thương hiệu']):
                                         brand = str(row['Thương hiệu']).lower()
                                         feature_vec.append(hash(brand) % 1000 / 1000.0)
                                     else:
@@ -752,21 +789,21 @@ elif page == "📊 Phân cụm dữ liệu":
                                     # Price (normalized)
                                     from utils import parse_price
                                     price = parse_price(row.get('Giá', 0))
-                                    if price:
+                                    if price and price > 0:
                                         feature_vec.append(price / 100.0)  # Normalize
                                     else:
                                         feature_vec.append(0)
                                     
-                                    # Year (normalized)
-                                    year = row.get('Năm đăng ký', 0)
-                                    if pd.notna(year) and year > 0:
+                                    # Year (normalized) - handle string format
+                                    year = safe_parse_year(row.get('Năm đăng ký', 0))
+                                    if year > 0:
                                         feature_vec.append((year - 2000) / 25.0)  # Normalize
                                     else:
                                         feature_vec.append(0)
                                     
-                                    # KM (normalized)
-                                    km = row.get('Số Km đã đi', 0)
-                                    if pd.notna(km) and km > 0:
+                                    # KM (normalized) - handle string format
+                                    km = safe_parse_km(row.get('Số Km đã đi', 0))
+                                    if km > 0:
                                         feature_vec.append(km / 100000.0)  # Normalize
                                     else:
                                         feature_vec.append(0)
@@ -813,10 +850,87 @@ elif page == "📊 Phân cụm dữ liệu":
             st.subheader("📈 Visualization")
             st.markdown("Biểu đồ phân cụm (cần chạy clustering trước)")
             
-            if 'cluster' in st.session_state:
-                st.info("Tính năng visualization đang phát triển. Sẽ hiển thị biểu đồ phân cụm 2D/3D.")
+            if 'cluster_labels' in st.session_state and 'cluster_data' in st.session_state:
+                try:
+                    cluster_labels = st.session_state['cluster_labels']
+                    cluster_data = st.session_state['cluster_data']
+                    X_vis = st.session_state.get('cluster_X', None)
+                    
+                    # Basic statistics
+                    st.markdown("### 📊 Thống kê các cụm")
+                    
+                    cluster_counts = pd.Series(cluster_labels).value_counts().sort_index()
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.bar_chart(cluster_counts)
+                        st.caption("Số lượng xe trong mỗi cụm")
+                    
+                    with col2:
+                        # Price distribution by cluster
+                        if 'price_parsed' in cluster_data.columns:
+                            price_by_cluster = cluster_data.groupby('cluster')['price_parsed'].mean()
+                            st.bar_chart(price_by_cluster)
+                            st.caption("Giá trung bình theo cụm (triệu VNĐ)")
+                        elif 'Giá' in cluster_data.columns:
+                            from utils import parse_price
+                            cluster_data['price_temp'] = cluster_data['Giá'].apply(parse_price)
+                            price_by_cluster = cluster_data.groupby('cluster')['price_temp'].mean()
+                            st.bar_chart(price_by_cluster)
+                            st.caption("Giá trung bình theo cụm (triệu VNĐ)")
+                    
+                    # Year distribution
+                    if 'year_parsed' in cluster_data.columns:
+                        st.markdown("### 📅 Phân bố năm theo cụm")
+                        year_by_cluster = cluster_data.groupby('cluster')['year_parsed'].mean()
+                        st.bar_chart(year_by_cluster)
+                        st.caption("Năm trung bình theo cụm")
+                    
+                    # Brand distribution
+                    if 'Thương hiệu' in cluster_data.columns:
+                        st.markdown("### 🏍️ Thương hiệu phổ biến theo cụm")
+                        for cluster_id in sorted(cluster_data['cluster'].unique()):
+                            cluster_bikes = cluster_data[cluster_data['cluster'] == cluster_id]
+                            if len(cluster_bikes) > 0:
+                                brand_counts = cluster_bikes['Thương hiệu'].value_counts().head(5)
+                                if len(brand_counts) > 0:
+                                    st.write(f"**Cụm {cluster_id}:** {', '.join(brand_counts.index.tolist())}")
+                    
+                    # 2D visualization if we have features
+                    if X_vis is not None and X_vis.shape[1] >= 2:
+                        st.markdown("### 📈 Biểu đồ 2D (PCA)")
+                        try:
+                            from sklearn.decomposition import PCA
+                            
+                            # Reduce to 2D
+                            pca = PCA(n_components=2, random_state=42)
+                            X_2d = pca.fit_transform(X_vis)
+                            
+                            # Create plot
+                            fig, ax = plt.subplots(figsize=(10, 6))
+                            scatter = ax.scatter(X_2d[:, 0], X_2d[:, 1], c=cluster_labels, cmap='viridis', alpha=0.6)
+                            ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.2%} variance)')
+                            ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.2%} variance)')
+                            ax.set_title('Clustering Visualization (PCA)')
+                            plt.colorbar(scatter, ax=ax, label='Cluster')
+                            st.pyplot(fig)
+                            plt.close(fig)
+                        except Exception as e:
+                            st.warning(f"Không thể tạo biểu đồ 2D: {str(e)}")
+                    
+                except Exception as e:
+                    st.error(f"Lỗi khi hiển thị visualization: {str(e)}")
+                    import traceback
+                    st.code(traceback.format_exc())
             else:
                 st.info("💡 Chạy clustering ở tab 'Clustering' trước để xem visualization")
+                st.markdown("""
+                ### Các tính năng visualization sẽ có:
+                - Biểu đồ số lượng xe trong mỗi cụm
+                - Phân bố giá theo cụm
+                - Phân bố năm theo cụm
+                - Biểu đồ 2D/3D với PCA
+                """)
 
 # Footer
 st.sidebar.markdown("---")
