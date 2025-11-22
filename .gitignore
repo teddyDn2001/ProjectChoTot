@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+fugue_env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data files (keep structure, ignore large outputs)
+*.csv
+*.xlsx
+*.xls
+# Allow only the original data file if needed (but it's large, consider Git LFS)
+# !data/data_motobikes.xlsx*.csv
+
+# Model artifacts and outputs
+*.joblib
+*.pkl
+*.h5
+*.pth
+*.pt
+models/
+artifacts/
+anomaly_outputs/
+plots/
+reports/
+
+# Output files
+*.png
+*.jpg
+*.jpeg
+*.pdf
+# PDF files are large, exclude them (can use Git LFS if needed)
+*.html
+
+# Large files (>25MB limit)
+# Models and artifacts are already excluded above
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+validation_issues.csv
+anomaly_summary.csv
+top_anomalies_*.csv
+explain_permutation.csv
+analysis_outputs.json
+eda_*.csv
+price_cv_results.csv
+
