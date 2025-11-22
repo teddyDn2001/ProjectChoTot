@@ -97,11 +97,22 @@ def load_anomaly_model():
 def load_sample_data():
     """Load sample data for recommendation"""
     try:
-        from project2.config import RAW_DATA_FILE
-        if RAW_DATA_FILE.exists():
-            df = pd.read_csv(RAW_DATA_FILE, nrows=1000)  # Load sample
-            return df, None
-        return None, "Không tìm thấy file dữ liệu."
+        from project2.config import RAW_DATA_FILE, DATA_DIR
+        
+        # Try multiple paths
+        possible_paths = [
+            RAW_DATA_FILE,  # data/data_motobikes.xlsx - Sheet1.csv
+            PROJECT_ROOT / "data" / "data_motobikes.xlsx - Sheet1.csv",
+            PROJECT_ROOT / "project2" / "data_motobikes.xlsx - Sheet1.csv",
+            PROJECT_ROOT / "project1" / "data_motobikes.xlsx - Sheet1.csv",
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                df = pd.read_csv(path, nrows=1000, low_memory=False)  # Load sample
+                return df, None
+        
+        return None, f"Không tìm thấy file dữ liệu. Đã thử: {[str(p) for p in possible_paths]}"
     except Exception as e:
         return None, f"Lỗi khi load dữ liệu: {str(e)}"
 
