@@ -521,9 +521,33 @@ elif page == "🔍 Gợi ý xe tương tự":
                     filtered['price_parsed'] = filtered['Giá'].apply(parse_price)
                     filtered = filtered[(filtered['price_parsed'] >= min_price) & (filtered['price_parsed'] <= max_price)]
                 
-                # Filter by year
+                # Filter by year - parse year first
                 if 'Năm đăng ký' in filtered.columns:
-                    filtered = filtered[(filtered['Năm đăng ký'] >= min_year) & (filtered['Năm đăng ký'] <= max_year)]
+                    def safe_parse_year_for_filter(value):
+                        if pd.isna(value):
+                            return None
+                        try:
+                            import re
+                            value_str = str(value).strip()
+                            year_match = re.search(r'\d{4}', value_str)
+                            if year_match:
+                                year = int(year_match.group())
+                                if 1990 <= year <= 2025:
+                                    return year
+                            return None
+                        except:
+                            return None
+                    
+                    # Parse years and filter
+                    filtered['year_parsed'] = filtered['Năm đăng ký'].apply(safe_parse_year_for_filter)
+                    filtered = filtered[
+                        (filtered['year_parsed'].notna()) & 
+                        (filtered['year_parsed'] >= min_year) & 
+                        (filtered['year_parsed'] <= max_year)
+                    ]
+                    # Drop temporary column
+                    if 'year_parsed' in filtered.columns:
+                        filtered = filtered.drop(columns=['year_parsed'])
                 
                 st.subheader(f"📊 Tìm thấy {len(filtered)} xe phù hợp")
                 if len(filtered) > 0:
@@ -958,14 +982,41 @@ elif page == "📊 Phân cụm dữ liệu":
                             
                             # Get features for all bikes
                             all_features = prepare_content_features(sample_data)
-                            selected_idx = sample_data[sample_data['Tiêu đề'] == selected_bike_title].index[0]
-                            selected_features = all_features[selected_idx:selected_idx+1]
                             
-                            # Calculate cosine similarity
-                            similarities = cosine_similarity(selected_features, all_features)[0]
+                            # Calculate features for selected bike
+                            if input_method == "📝 Nhập thông tin trực tiếp":
+                                # Create a temporary DataFrame with selected bike
+                                temp_df = pd.DataFrame([selected_bike])
+                                selected_features = prepare_content_features(temp_df)
+                            else:
+                                # Find index from selected bike title
+                                if 'Tiêu đề' in sample_data.columns and 'Tiêu đề' in selected_bike:
+                                    selected_bike_title = selected_bike.get('Tiêu đề', '')
+                                    matching = sample_data[sample_data['Tiêu đề'] == selected_bike_title]
+                                    if len(matching) > 0:
+                                        selected_idx = matching.index[0]
+                                        selected_features = all_features[selected_idx:selected_idx+1]
+                                    else:
+                                        st.error("Không tìm thấy xe trong dữ liệu")
+                                        selected_features = None
+                                else:
+                                    st.error("Không có thông tin 'Tiêu đề'")
+                                    selected_features = None
                             
-                            # Get top N similar (exclude itself)
-                            similar_indices = np.argsort(similarities)[::-1][1:top_n+1]
+                            if selected_features is not None and len(selected_features) > 0:
+                                # Calculate cosine similarity
+                                similarities = cosine_similarity(selected_features, all_features)[0]
+                                
+                                # Get top N similar
+                                if input_method == "📝 Nhập thông tin trực tiếp":
+                                    # Don't exclude any (no "itself" when input directly)
+                                    similar_indices = np.argsort(similarities)[::-1][:top_n]
+                                else:
+                                    # Exclude itself when selecting from list
+                                    similar_indices = np.argsort(similarities)[::-1][1:top_n+1]
+                            else:
+                                st.error("Không thể tính toán similarity")
+                                similar_indices = []
                             
                             # Display results
                             st.success(f"✅ Tìm thấy {len(similar_indices)} xe tương tự")
