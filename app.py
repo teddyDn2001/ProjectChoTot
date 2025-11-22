@@ -1161,11 +1161,13 @@ elif page == "📊 Phân cụm dữ liệu":
         with tab3:
             st.subheader("📈 Visualization - Trực quan hóa phân khúc")
             st.markdown("""
-            **Biểu đồ giúp hiểu rõ:**
-            - 📊 Phân bố số lượng xe trong mỗi phân khúc
-            - 💰 Phân bố giá theo phân khúc
-            - 📅 Phân bố năm sản xuất
-            - 🎯 Vị trí các cụm trong không gian 2D
+            **💡 Biểu đồ giúp bạn hiểu rõ:**
+            - 📊 **Có bao nhiêu xe** trong mỗi phân khúc?
+            - 💰 **Giá trung bình** của từng phân khúc là bao nhiêu?
+            - 📅 **Xe đời nào** phổ biến trong mỗi phân khúc?
+            - 🎯 **Các phân khúc khác nhau** như thế nào?
+            
+            > 💬 **Lưu ý:** Cần chạy clustering ở tab "Clustering" trước để xem visualization
             """)
             
             if 'cluster_labels' in st.session_state and 'cluster_data' in st.session_state:
@@ -1174,35 +1176,81 @@ elif page == "📊 Phân cụm dữ liệu":
                     cluster_data = st.session_state['cluster_data']
                     X_vis = st.session_state.get('cluster_X', None)
                     
-                    # Basic statistics
-                    st.markdown("### 📊 Thống kê các cụm")
+                    # Basic statistics with better explanations
+                    st.markdown("### 📊 1. Số lượng xe trong mỗi phân khúc")
+                    st.markdown("Biểu đồ này cho thấy **có bao nhiêu xe** trong mỗi phân khúc. Phân khúc nào có nhiều xe nhất?")
                     
                     cluster_counts = pd.Series(cluster_labels).value_counts().sort_index()
-                    col1, col2 = st.columns(2)
+                    cluster_counts_df = pd.DataFrame({
+                        'Phân khúc': [f'Phân khúc {i}' for i in cluster_counts.index],
+                        'Số lượng xe': cluster_counts.values
+                    })
+                    
+                    st.bar_chart(cluster_counts_df.set_index('Phân khúc'))
+                    
+                    # Add explanation
+                    max_cluster = cluster_counts.idxmax()
+                    max_count = cluster_counts.max()
+                    st.info(f"💡 **Phân khúc {max_cluster}** có nhiều xe nhất với **{max_count} xe** ({max_count/len(cluster_data)*100:.1f}% tổng số xe)")
+                    
+                    st.markdown("---")
+                    
+                    # Price distribution
+                    st.markdown("### 💰 2. Giá trung bình của từng phân khúc")
+                    st.markdown("Biểu đồ này cho thấy **giá trung bình** của mỗi phân khúc. Phân khúc nào đắt nhất? Rẻ nhất?")
+                    
+                    col1, col2 = st.columns([2, 1])
                     
                     with col1:
-                        st.bar_chart(cluster_counts)
-                        st.caption("Số lượng xe trong mỗi cụm")
-                    
-                    with col2:
                         # Price distribution by cluster
                         if 'price_parsed' in cluster_data.columns:
-                            price_by_cluster = cluster_data.groupby('cluster')['price_parsed'].mean()
-                            st.bar_chart(price_by_cluster)
-                            st.caption("Giá trung bình theo cụm (triệu VNĐ)")
+                            price_by_cluster = cluster_data.groupby('cluster')['price_parsed'].mean().sort_index()
                         elif 'Giá' in cluster_data.columns:
                             from utils import parse_price
                             cluster_data['price_temp'] = cluster_data['Giá'].apply(parse_price)
-                            price_by_cluster = cluster_data.groupby('cluster')['price_temp'].mean()
-                            st.bar_chart(price_by_cluster)
-                            st.caption("Giá trung bình theo cụm (triệu VNĐ)")
+                            price_by_cluster = cluster_data.groupby('cluster')['price_temp'].mean().sort_index()
+                        else:
+                            price_by_cluster = pd.Series()
+                        
+                        if len(price_by_cluster) > 0:
+                            price_df = pd.DataFrame({
+                                'Phân khúc': [f'Phân khúc {i}' for i in price_by_cluster.index],
+                                'Giá trung bình (triệu VNĐ)': price_by_cluster.values
+                            })
+                            st.bar_chart(price_df.set_index('Phân khúc'))
+                            
+                            # Add explanation
+                            cheapest = price_by_cluster.idxmin()
+                            most_expensive = price_by_cluster.idxmax()
+                            with col2:
+                                st.metric("💰 Rẻ nhất", f"Phân khúc {cheapest}", f"{price_by_cluster[cheapest]:.1f} triệu")
+                                st.metric("💎 Đắt nhất", f"Phân khúc {most_expensive}", f"{price_by_cluster[most_expensive]:.1f} triệu")
+                                st.caption(f"Chênh lệch: {price_by_cluster[most_expensive] - price_by_cluster[cheapest]:.1f} triệu")
+                    
+                    st.markdown("---")
                     
                     # Year distribution
+                    st.markdown("### 📅 3. Năm sản xuất trung bình của từng phân khúc")
+                    st.markdown("Biểu đồ này cho thấy **xe đời nào** phổ biến trong mỗi phân khúc. Phân khúc nào có xe mới nhất?")
+                    
                     if 'year_parsed' in cluster_data.columns:
-                        st.markdown("### 📅 Phân bố năm theo cụm")
-                        year_by_cluster = cluster_data.groupby('cluster')['year_parsed'].mean()
-                        st.bar_chart(year_by_cluster)
-                        st.caption("Năm trung bình theo cụm")
+                        year_by_cluster = cluster_data.groupby('cluster')['year_parsed'].mean().sort_index()
+                        year_df = pd.DataFrame({
+                            'Phân khúc': [f'Phân khúc {i}' for i in year_by_cluster.index],
+                            'Năm trung bình': year_by_cluster.values
+                        })
+                        st.bar_chart(year_df.set_index('Phân khúc'))
+                        
+                        # Add explanation
+                        newest = year_by_cluster.idxmax()
+                        oldest = year_by_cluster.idxmin()
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.info(f"🆕 **Phân khúc {newest}** có xe mới nhất (năm TB: {year_by_cluster[newest]:.0f})")
+                        with col2:
+                            st.info(f"📜 **Phân khúc {oldest}** có xe cũ nhất (năm TB: {year_by_cluster[oldest]:.0f})")
+                    
+                    st.markdown("---")
                     
                     # Brand distribution
                     if 'Thương hiệu' in cluster_data.columns:
@@ -1216,7 +1264,16 @@ elif page == "📊 Phân cụm dữ liệu":
                     
                     # 2D visualization if we have features
                     if X_vis is not None and X_vis.shape[1] >= 2:
-                        st.markdown("### 📈 Biểu đồ 2D - Vị trí các phân khúc")
+                        st.markdown("### 🎯 5. Bản đồ phân khúc (Biểu đồ 2D)")
+                        st.markdown("""
+                        **Biểu đồ này giúp bạn hiểu:**
+                        - 🎯 **Vị trí** của từng phân khúc trong không gian 2 chiều
+                        - 📍 **Khoảng cách** giữa các phân khúc (phân khúc gần nhau = tương đồng)
+                        - 🔍 **Mật độ** xe trong mỗi phân khúc (điểm dày = nhiều xe)
+                        
+                        > 💡 **Cách đọc:** Mỗi chấm là một xe. Các chấm cùng màu = cùng phân khúc. Chấm gần nhau = đặc điểm tương đồng.
+                        """)
+                        
                         try:
                             from sklearn.decomposition import PCA
                             
@@ -1225,40 +1282,64 @@ elif page == "📊 Phân cụm dữ liệu":
                             X_2d = pca.fit_transform(X_vis)
                             
                             # Create plot with better styling
-                            fig, ax = plt.subplots(figsize=(12, 8))
+                            fig, ax = plt.subplots(figsize=(14, 10))
                             
                             # Use distinct colors for each cluster
-                            colors = plt.cm.Set3(np.linspace(0, 1, len(np.unique(cluster_labels))))
+                            colors_list = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2']
                             
                             for cluster_id in np.unique(cluster_labels):
                                 mask = cluster_labels == cluster_id
+                                color = colors_list[cluster_id % len(colors_list)]
                                 ax.scatter(
                                     X_2d[mask, 0], X_2d[mask, 1],
-                                    c=[colors[cluster_id]],
-                                    label=f'Phân khúc {cluster_id}',
-                                    alpha=0.6,
-                                    s=50
+                                    c=color,
+                                    label=f'Phân khúc {cluster_id} ({np.sum(mask)} xe)',
+                                    alpha=0.7,
+                                    s=80,
+                                    edgecolors='white',
+                                    linewidth=0.5
                                 )
                             
-                            ax.set_xlabel(f'Thành phần chính 1 (PC1) - {pca.explained_variance_ratio_[0]:.1%} phương sai', fontsize=10)
-                            ax.set_ylabel(f'Thành phần chính 2 (PC2) - {pca.explained_variance_ratio_[1]:.1%} phương sai', fontsize=10)
-                            ax.set_title('📊 Phân bố các phân khúc trong không gian 2D', fontsize=12, fontweight='bold')
-                            ax.legend(title='Phân khúc', bbox_to_anchor=(1.05, 1), loc='upper left')
-                            ax.grid(True, alpha=0.3)
+                            # Better labels in Vietnamese
+                            variance_pc1 = pca.explained_variance_ratio_[0] * 100
+                            variance_pc2 = pca.explained_variance_ratio_[1] * 100
+                            
+                            ax.set_xlabel(f'Trục 1 - Giải thích {variance_pc1:.1f}% sự khác biệt', fontsize=12, fontweight='bold')
+                            ax.set_ylabel(f'Trục 2 - Giải thích {variance_pc2:.1f}% sự khác biệt', fontsize=12, fontweight='bold')
+                            ax.set_title('🗺️ Bản đồ các phân khúc xe máy', fontsize=14, fontweight='bold', pad=20)
+                            ax.legend(title='📊 Phân khúc', title_fontsize=12, fontsize=10, 
+                                    bbox_to_anchor=(1.02, 1), loc='upper left', frameon=True, fancybox=True, shadow=True)
+                            ax.grid(True, alpha=0.3, linestyle='--')
+                            ax.set_facecolor('#f8f9fa')
                             plt.tight_layout()
                             st.pyplot(fig)
                             plt.close(fig)
                             
-                            st.caption("💡 Biểu đồ này giúp hiểu vị trí và mối quan hệ giữa các phân khúc. Các điểm gần nhau có đặc điểm tương đồng.")
+                            # Add explanation
+                            st.success(f"""
+                            ✅ **Biểu đồ đã được tạo thành công!**
+                            
+                            **Cách hiểu biểu đồ:**
+                            - Mỗi chấm màu = một xe máy
+                            - Chấm cùng màu = cùng phân khúc
+                            - Chấm gần nhau = đặc điểm tương đồng (giá, năm, thương hiệu...)
+                            - Chấm xa nhau = khác biệt nhiều
+                            
+                            **Ví dụ:** Nếu phân khúc 0 và phân khúc 1 gần nhau → hai phân khúc này có đặc điểm tương đồng, có thể gộp lại hoặc cần phân biệt rõ hơn.
+                            """)
                         except Exception as e:
                             st.warning(f"Không thể tạo biểu đồ 2D: {str(e)}")
+                            import traceback
+                            with st.expander("Chi tiết lỗi"):
+                                st.code(traceback.format_exc())
                     
-                    # Summary insights
+                    # Summary insights - User-friendly
                     st.markdown("---")
-                    st.subheader("📋 Tóm tắt Insights")
+                    st.subheader("💡 Tóm tắt - Những điều quan trọng cần biết")
+                    st.markdown("Dựa trên kết quả phân cụm, đây là những **insights chính** giúp bạn hiểu thị trường:")
                     
+                    # Price analysis
                     if 'price_parsed' in cluster_data.columns or 'Giá' in cluster_data.columns:
-                        # Price range analysis
                         all_prices = []
                         for cluster_id in range(n_clusters):
                             cluster_subset = cluster_data[cluster_data['cluster'] == cluster_id]
@@ -1270,14 +1351,58 @@ elif page == "📊 Phân cụm dữ liệu":
                             else:
                                 prices = pd.Series()
                             if len(prices) > 0:
-                                all_prices.append((cluster_id, prices.mean(), len(cluster_subset)))
+                                all_prices.append((cluster_id, prices.mean(), prices.min(), prices.max(), len(cluster_subset)))
                         
                         if all_prices:
                             all_prices.sort(key=lambda x: x[1])
-                            st.info(f"💰 **Phân khúc giá rẻ nhất:** Phân khúc {all_prices[0][0]} (giá TB: {all_prices[0][1]:.1f} triệu)")
-                            st.info(f"💎 **Phân khúc giá cao nhất:** Phân khúc {all_prices[-1][0]} (giá TB: {all_prices[-1][1]:.1f} triệu)")
+                            cheapest = all_prices[0]
+                            most_expensive = all_prices[-1]
+                            
+                            # Display in cards
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.markdown(f"""
+                                #### 💰 Phân khúc giá rẻ nhất
+                                **Phân khúc {cheapest[0]}**
+                                - Giá trung bình: **{cheapest[1]:.1f} triệu VNĐ**
+                                - Khoảng giá: {cheapest[2]:.1f} - {cheapest[3]:.1f} triệu
+                                - Số lượng: {cheapest[4]} xe
+                                
+                                💡 **Phù hợp cho:** Người có ngân sách hạn chế, sinh viên, người mới bắt đầu
+                                """)
+                            
+                            with col2:
+                                st.markdown(f"""
+                                #### 💎 Phân khúc giá cao nhất
+                                **Phân khúc {most_expensive[0]}**
+                                - Giá trung bình: **{most_expensive[1]:.1f} triệu VNĐ**
+                                - Khoảng giá: {most_expensive[2]:.1f} - {most_expensive[3]:.1f} triệu
+                                - Số lượng: {most_expensive[4]} xe
+                                
+                                💡 **Phù hợp cho:** Người có thu nhập cao, muốn xe cao cấp, đời mới
+                                """)
+                            
+                            # Price difference
+                            price_diff = most_expensive[1] - cheapest[1]
+                            st.info(f"📊 **Chênh lệch giá:** Phân khúc đắt nhất cao hơn phân khúc rẻ nhất **{price_diff:.1f} triệu VNĐ** ({price_diff/cheapest[1]*100:.0f}%)")
                     
-                    st.success("✅ Phân cụm hoàn tất! Sử dụng các insights trên để hiểu thị trường và đưa ra quyết định phù hợp.")
+                    # Market share
+                    st.markdown("### 📊 Thị phần các phân khúc")
+                    cluster_counts = pd.Series(cluster_labels).value_counts().sort_index()
+                    for cluster_id, count in cluster_counts.items():
+                        percentage = count / len(cluster_data) * 100
+                        st.progress(percentage / 100, text=f"Phân khúc {cluster_id}: {count} xe ({percentage:.1f}% thị trường)")
+                    
+                    # Final message
+                    st.success("""
+                    ✅ **Phân cụm hoàn tất!**
+                    
+                    **Bạn có thể sử dụng kết quả này để:**
+                    - 🛒 **Người mua:** Tìm phân khúc phù hợp với ngân sách
+                    - 💼 **Người bán:** Định giá hợp lý dựa trên phân khúc
+                    - 📈 **Phân tích:** Hiểu cấu trúc và xu hướng thị trường
+                    """)
                     
                 except Exception as e:
                     st.error(f"Lỗi khi hiển thị visualization: {str(e)}")
