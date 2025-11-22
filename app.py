@@ -412,7 +412,7 @@ elif page == "🔍 Gợi ý xe tương tự":
     if error:
         st.error(error)
     else:
-        st.info(f"📊 Đang load {len(sample_data)} records từ dữ liệu")
+        st.success(f"📊 Đã load **{len(sample_data):,}** records từ dataset Chợ Tốt (toàn bộ dữ liệu)")
         
         # Import utils
         from utils import get_bike_info, find_similar_bikes, format_price, parse_price
@@ -578,7 +578,7 @@ elif page == "📊 Phân cụm dữ liệu":
     if data_error:
         st.error(data_error)
     else:
-        st.info(f"📊 Đang load {len(sample_data)} records từ dữ liệu")
+        st.success(f"📊 Đã load **{len(sample_data):,}** records từ dataset Chợ Tốt (toàn bộ dữ liệu)")
         
         # Import clustering functions
         from sklearn.cluster import KMeans, AgglomerativeClustering
@@ -1423,9 +1423,10 @@ elif page == "📊 Phân cụm dữ liệu":
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 👤 Thông tin")
 st.sidebar.markdown("""
-**Tác giả:** Đoàn Anh  
-**Đồ án:** Data Science  
-**Dataset:** Chợ Tốt (7.2K+ records)
+**👨‍💻 Tác giả:** Đoàn Anh  
+**🎓 Đồ án:** Data Science  
+**📊 Dataset:** Chợ Tốt  
+**📈 Số lượng:** 7,200+ records
 """)
 st.sidebar.markdown("### 📚 Tài liệu")
 st.sidebar.markdown("[GitHub Repository](https://github.com/teddyDn2001/ProjectChoTot)")
