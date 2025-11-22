@@ -215,7 +215,9 @@ elif page == "💰 Dự đoán giá":
             if submitted:
                 try:
                     # Get feature names from preprocessor
-                    preprocessor_data = joblib.load(PREPROCESSOR_PATH) if 'PREPROCESSOR_PATH' in dir() else None
+                    from project1.config import PREPROCESSOR_PATH
+                    import joblib
+                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
                     if isinstance(preprocessor_data, dict):
                         numeric_features = preprocessor_data.get('numeric_features', [])
                         categorical_features = preprocessor_data.get('categorical_features', [])
