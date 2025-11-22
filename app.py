@@ -492,20 +492,55 @@ elif page == "📊 Phân cụm dữ liệu":
                         df_clean['price_parsed'] = df_clean['gia_vnd'] / 1_000_000
                         numeric_cols.append('price_parsed')
                     
-                    # Year
+                    # Year - parse carefully to handle strings like "2008 trước năm"
+                    def parse_year(value):
+                        if pd.isna(value):
+                            return 0
+                        try:
+                            # Convert to string first
+                            value_str = str(value).strip()
+                            # Extract first 4 digits (year)
+                            import re
+                            year_match = re.search(r'\d{4}', value_str)
+                            if year_match:
+                                year = int(year_match.group())
+                                # Validate year range
+                                if 1990 <= year <= 2025:
+                                    return year
+                            return 0
+                        except:
+                            return 0
+                    
                     if 'Năm đăng ký' in df_clean.columns:
-                        df_clean['year_parsed'] = pd.to_numeric(df_clean['Năm đăng ký'], errors='coerce').fillna(0)
+                        df_clean['year_parsed'] = df_clean['Năm đăng ký'].apply(parse_year)
                         numeric_cols.append('year_parsed')
                     elif 'nam_dang_ky' in df_clean.columns:
-                        df_clean['year_parsed'] = pd.to_numeric(df_clean['nam_dang_ky'], errors='coerce').fillna(0)
+                        df_clean['year_parsed'] = df_clean['nam_dang_ky'].apply(parse_year)
                         numeric_cols.append('year_parsed')
                     
-                    # KM
+                    # KM - parse carefully
+                    def parse_km(value):
+                        if pd.isna(value):
+                            return 0
+                        try:
+                            # Convert to string and extract numbers
+                            value_str = str(value).strip().lower()
+                            # Remove common text
+                            value_str = value_str.replace('km', '').replace(',', '').replace('.', '').strip()
+                            # Extract numbers
+                            import re
+                            numbers = re.findall(r'\d+', value_str)
+                            if numbers:
+                                return float(''.join(numbers))
+                            return 0
+                        except:
+                            return 0
+                    
                     if 'Số Km đã đi' in df_clean.columns:
-                        df_clean['km_parsed'] = pd.to_numeric(df_clean['Số Km đã đi'], errors='coerce').fillna(0)
+                        df_clean['km_parsed'] = df_clean['Số Km đã đi'].apply(parse_km)
                         numeric_cols.append('km_parsed')
                     elif 'so_km' in df_clean.columns:
-                        df_clean['km_parsed'] = pd.to_numeric(df_clean['so_km'], errors='coerce').fillna(0)
+                        df_clean['km_parsed'] = df_clean['so_km'].apply(parse_km)
                         numeric_cols.append('km_parsed')
                     
                     # One-hot encode brand
