@@ -214,33 +214,60 @@ elif page == "💰 Dự đoán giá":
             
             if submitted:
                 try:
-                    # Prepare input data
-                    input_data = pd.DataFrame({
+                    # Get feature names from preprocessor
+                    preprocessor_data = joblib.load(PREPROCESSOR_PATH) if 'PREPROCESSOR_PATH' in dir() else None
+                    if isinstance(preprocessor_data, dict):
+                        numeric_features = preprocessor_data.get('numeric_features', [])
+                        categorical_features = preprocessor_data.get('categorical_features', [])
+                    else:
+                        # Fallback: use default feature names
+                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
+                    
+                    # Prepare input data with correct column order
+                    all_features = numeric_features + categorical_features
+                    input_dict = {
                         'so_km': [so_km],
                         'nam_dang_ky': [nam_dang_ky],
                         'dung_tich_cc': [dung_tich_cc],
-                        'trong_luong_kg': [np.nan],  # Will be imputed
-                        'len_title': [len(dong_xe)],
+                        'trong_luong_kg': [np.nan],
+                        'len_title': [len(dong_xe) if dong_xe else 0],
                         'len_desc': [0],
                         'thuong_hieu': [thuong_hieu],
-                        'dong_xe': [dong_xe],
+                        'dong_xe': [dong_xe if dong_xe else ""],
                         'tinh_trang': [tinh_trang],
                         'loai_xe': [loai_xe],
                         'xuat_xu': [xuat_xu],
                         'tinh_thanh': [tinh_thanh],
-                        'quan': [quan]
-                    })
+                        'quan': [quan if quan else ""]
+                    }
+                    
+                    # Create DataFrame with only available features
+                    available_features = [f for f in all_features if f in input_dict]
+                    input_data = pd.DataFrame({f: input_dict[f] for f in available_features})
                     
                     # Transform and predict
                     X_transformed = preprocessor.transform(input_data)
+                    
+                    # Handle sparse matrix
+                    if hasattr(X_transformed, 'toarray'):
+                        X_transformed = X_transformed.toarray()
+                    
                     prediction = model.predict(X_transformed)[0]
                     
-                    # Display result
-                    st.success(f"### 💰 Giá dự đoán: {prediction:,.0f} VNĐ")
-                    st.info(f"≈ {prediction/1_000_000:.2f} triệu VNĐ")
+                    # Validate prediction
+                    if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
+                        st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
+                    else:
+                        # Display result
+                        st.success(f"### 💰 Giá dự đoán: {prediction:,.0f} VNĐ")
+                        st.info(f"≈ {prediction/1_000_000:.2f} triệu VNĐ")
                     
                 except Exception as e:
                     st.error(f"Lỗi khi dự đoán: {str(e)}")
+                    import traceback
+                    with st.expander("Chi tiết lỗi"):
+                        st.code(traceback.format_exc())
 
 # Anomaly Detection page
 elif page == "🚨 Phát hiện bất thường":
@@ -273,41 +300,89 @@ elif page == "🚨 Phát hiện bất thường":
             
             if submitted:
                 try:
-                    # Prepare input
-                    input_data = pd.DataFrame({
+                    # Get feature names
+                    from project1.config import PREPROCESSOR_PATH
+                    import joblib
+                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+                    if isinstance(preprocessor_data, dict):
+                        numeric_features = preprocessor_data.get('numeric_features', [])
+                        categorical_features = preprocessor_data.get('categorical_features', [])
+                    else:
+                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
+                    
+                    # Prepare input with correct columns
+                    all_features = numeric_features + categorical_features
+                    input_dict = {
                         'so_km': [so_km],
                         'nam_dang_ky': [nam_dang_ky],
                         'dung_tich_cc': [dung_tich_cc],
                         'trong_luong_kg': [np.nan],
-                        'len_title': [len(dong_xe)],
+                        'len_title': [len(dong_xe) if dong_xe else 0],
                         'len_desc': [0],
                         'thuong_hieu': [thuong_hieu],
-                        'dong_xe': [dong_xe],
+                        'dong_xe': [dong_xe if dong_xe else ""],
                         'tinh_trang': [tinh_trang],
                         'loai_xe': [loai_xe],
                         'xuat_xu': ["Việt Nam"],
                         'tinh_thanh': ["Hồ Chí Minh"],
                         'quan': [""]
-                    })
+                    }
+                    
+                    # Create DataFrame with available features
+                    available_features = [f for f in all_features if f in input_dict]
+                    input_data = pd.DataFrame({f: input_dict[f] for f in available_features})
                     
                     # Transform
                     X_transformed = preprocessor.transform(input_data)
                     
+                    # Handle sparse matrix
+                    if hasattr(X_transformed, 'toarray'):
+                        X_transformed = X_transformed.toarray()
+                    
                     # Predict anomaly
                     anomaly_score = model.decision_function(X_transformed)[0]
-                    is_anomaly = model.predict(X_transformed)[0] == -1
+                    predictions = model.predict(X_transformed)
+                    is_anomaly = predictions[0] == -1
                     
-                    # Display result
-                    if is_anomaly:
-                        st.error("### ⚠️ Phát hiện giá BẤT THƯỜNG")
-                        st.warning(f"Anomaly score: {anomaly_score:.4f}")
-                        st.info("Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại.")
+                    # Validate scores
+                    if np.isnan(anomaly_score) or np.isinf(anomaly_score):
+                        st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
                     else:
-                        st.success("### ✅ Giá BÌNH THƯỜNG")
-                        st.info(f"Anomaly score: {anomaly_score:.4f}")
+                        # Display result
+                        if is_anomaly:
+                            st.error("### ⚠️ Phát hiện giá BẤT THƯỜNG")
+                            st.warning(f"Anomaly score: {anomaly_score:.4f}")
+                            st.info("Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại.")
+                            
+                            # Show predicted price for comparison
+                            try:
+                                from project1.config import PRICE_MODEL_PATH
+                                price_model_data = joblib.load(PRICE_MODEL_PATH)
+                                if isinstance(price_model_data, dict):
+                                    price_model = price_model_data.get('model', price_model_data)
+                                else:
+                                    price_model = price_model_data
+                                
+                                price_pred = price_model.predict(X_transformed)[0]
+                                if price_pred > 0:
+                                    st.info(f"💡 Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ")
+                                    st.info(f"💡 Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ")
+                                    diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
+                                    if diff_pct > 30:
+                                        st.warning(f"⚠️ Chênh lệch {diff_pct:.1f}% so với giá dự đoán - đây là lý do phát hiện bất thường")
+                            except:
+                                pass
+                        else:
+                            st.success("### ✅ Giá BÌNH THƯỜNG")
+                            st.info(f"Anomaly score: {anomaly_score:.4f}")
+                            st.success("Giá này phù hợp với thị trường.")
                         
                 except Exception as e:
                     st.error(f"Lỗi: {str(e)}")
+                    import traceback
+                    with st.expander("Chi tiết lỗi"):
+                        st.code(traceback.format_exc())
 
 # Recommendation page
 elif page == "🔍 Gợi ý xe tương tự":
