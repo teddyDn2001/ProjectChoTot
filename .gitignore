@@ -43,8 +43,8 @@ fugue_env/
 *.csv
 *.xlsx
 *.xls
-# Allow only the original data file if needed (but it's large, consider Git LFS)
-# !data/data_motobikes.xlsx*.csv
+# Allow data file for deployment (using Git LFS)
+!data/data_motobikes.xlsx*.csv
 
 # Model artifacts and outputs
 *.joblib
@@ -52,6 +52,9 @@ fugue_env/
 *.h5
 *.pth
 *.pt
+# Allow models for deployment (using Git LFS)
+!project1/models/*.joblib
+!project1/artifacts/*.joblib
 models/
 artifacts/
 anomaly_outputs/
