@@ -205,7 +205,7 @@ if page == "🏠 Trang chủ":
     with author_col1:
         st.markdown("""
         **👨‍💻 Tác giả:** Đoàn Anh  
-        **📧 Email:** [Email của bạn]  
+        **📧 Email:** anhwin01@gmail.com  
         **🔗 GitHub:** [teddyDn2001](https://github.com/teddyDn2001)  
         **📚 Repository:** [ProjectChoTot](https://github.com/teddyDn2001/ProjectChoTot)
         """)
@@ -1445,9 +1445,10 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 👤 Thông tin")
 st.sidebar.markdown("""
 **👨‍💻 Tác giả:** Đoàn Anh  
+**📧 Email:** anhwin01@gmail.com  
 **🎓 Đồ án:** Data Science  
 **📊 Dataset:** Chợ Tốt  
-**📈 Số lượng:** 7,200+ records
+**📈 Số lượng:** 7,208 records
 """)
 st.sidebar.markdown("### 📚 Tài liệu")
 st.sidebar.markdown("[GitHub Repository](https://github.com/teddyDn2001/ProjectChoTot)")
