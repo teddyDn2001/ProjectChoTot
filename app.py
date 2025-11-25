@@ -333,13 +333,48 @@ st.markdown("""
         color: #1f2937 !important;
     }
     
-    /* All text inside selectbox container */
+    /* All text inside selectbox container - but override for selected value */
     .stSelectbox * {
         color: inherit;
     }
     
     .stSelectbox [data-baseweb="select"] * {
         color: #1f2937 !important;
+    }
+    
+    /* Force selected value to be visible - target the input value directly */
+    [data-baseweb="select"] input,
+    [data-baseweb="select"] [data-baseweb="select"] input,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] input {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    /* BaseWeb Select specific - ensure value is visible */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    /* Target the value container in BaseWeb Select */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    /* Target the value display area more aggressively */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
+    }
+    
+    /* Ensure the displayed text in selectbox is visible */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div > span {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
     }
     
     /* More specific selectors for selected value display */
@@ -738,6 +773,54 @@ st.markdown("""
         color: #1f2937;
     }
 </style>
+<script>
+    // Force selected value in selectbox to be visible
+    function fixSelectboxText() {
+        const selectboxes = document.querySelectorAll('[data-baseweb="select"]');
+        selectboxes.forEach(select => {
+            // Find all potential text containers
+            const valueElements = select.querySelectorAll('div, span, input, p');
+            valueElements.forEach(el => {
+                const computedStyle = window.getComputedStyle(el);
+                const color = computedStyle.color;
+                const fillColor = computedStyle.webkitTextFillColor;
+                const opacity = computedStyle.opacity;
+                
+                // Check if text is invisible or transparent
+                if (color === 'rgba(0, 0, 0, 0)' || 
+                    color === 'transparent' ||
+                    fillColor === 'transparent' ||
+                    opacity === '0' ||
+                    (color === 'rgb(0, 0, 0)' && fillColor === 'transparent')) {
+                    el.style.color = '#1f2937';
+                    el.style.webkitTextFillColor = '#1f2937';
+                    el.style.opacity = '1';
+                }
+                
+                // Also force set if element has text content
+                if (el.textContent && el.textContent.trim() !== '') {
+                    el.style.color = '#1f2937';
+                    el.style.webkitTextFillColor = '#1f2937';
+                }
+            });
+        });
+    }
+    
+    // Run on page load and after DOM updates
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixSelectboxText);
+    } else {
+        fixSelectboxText();
+    }
+    
+    // Also run after a short delay to catch dynamically loaded elements
+    setTimeout(fixSelectboxText, 500);
+    setTimeout(fixSelectboxText, 1000);
+    
+    // Use MutationObserver to watch for changes
+    const observer = new MutationObserver(fixSelectboxText);
+    observer.observe(document.body, { childList: true, subtree: true });
+</script>
 """, unsafe_allow_html=True)
 
 # Initialize session state
