@@ -247,6 +247,21 @@ st.markdown("""
         background-color: white !important;
     }
     
+    /* CRITICAL FIX: Override any transparent text in selectbox value display */
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"],
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] * {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Also target any element that might be the displayed value */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
     /* Ensure text is visible in text inputs */
     .stTextInput>div>div>input, .stTextInput input {
         color: #1f2937 !important;
@@ -859,10 +874,23 @@ st.markdown("""
     // Also listen for click events on selectboxes
     document.addEventListener('click', function(e) {
         if (e.target.closest('[data-baseweb="select"]')) {
+            setTimeout(fixSelectboxText, 50);
             setTimeout(fixSelectboxText, 100);
             setTimeout(fixSelectboxText, 300);
         }
     }, true);
+    
+    // Listen for change events (when value is selected)
+    document.addEventListener('change', function(e) {
+        if (e.target.closest('[data-baseweb="select"]')) {
+            setTimeout(fixSelectboxText, 50);
+            setTimeout(fixSelectboxText, 100);
+            setTimeout(fixSelectboxText, 300);
+        }
+    }, true);
+    
+    // Also run periodically to catch any missed updates
+    setInterval(fixSelectboxText, 2000);
 </script>
 """, unsafe_allow_html=True)
 
