@@ -227,6 +227,32 @@ st.markdown("""
         transition: all 0.3s ease;
         padding: 0.75rem 1rem;
         font-size: 1rem;
+        color: #1f2937 !important;
+        background-color: white !important;
+    }
+    
+    /* Ensure text is visible in selectbox */
+    .stSelectbox>div>div>div, .stSelectbox select, .stSelectbox option {
+        color: #1f2937 !important;
+        background-color: white !important;
+    }
+    
+    /* Ensure text is visible in text inputs */
+    .stTextInput>div>div>input, .stTextInput input {
+        color: #1f2937 !important;
+        background-color: white !important;
+    }
+    
+    /* Ensure text is visible in number inputs */
+    .stNumberInput>div>div>input, .stNumberInput input {
+        color: #1f2937 !important;
+        background-color: white !important;
+    }
+    
+    /* Ensure labels are visible */
+    label, .stSelectbox label, .stTextInput label, .stNumberInput label, .stSlider label {
+        color: #374151 !important;
+        font-weight: 500 !important;
     }
     
     .stSelectbox>div>div:hover, .stTextInput>div>div>input:hover, .stNumberInput>div>div>input:hover {
@@ -238,6 +264,39 @@ st.markdown("""
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
         outline: none;
+    }
+    
+    /* Ensure placeholder text is visible */
+    .stTextInput input::placeholder, .stNumberInput input::placeholder {
+        color: #9ca3af !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure slider labels and values are visible */
+    .stSlider label, .stSlider [data-testid="stMarkdownContainer"] {
+        color: #374151 !important;
+    }
+    
+    .stSlider [data-testid="stMarkdownContainer"] p {
+        color: #1f2937 !important;
+    }
+    
+    /* Ensure all Streamlit text elements are visible */
+    [data-testid="stMarkdownContainer"], 
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stMarkdownContainer"] h3 {
+        color: inherit !important;
+    }
+    
+    /* Ensure selectbox dropdown text is visible */
+    [data-baseweb="select"] {
+        color: #1f2937 !important;
+    }
+    
+    [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
     }
     
     /* Info Boxes Enhanced */
