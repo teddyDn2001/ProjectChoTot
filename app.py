@@ -544,55 +544,12 @@ st.markdown("""
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     }
     
-    /* Hide Streamlit branding - but keep content visible */
+    /* Hide Streamlit branding only */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    /* Don't hide header completely - it may contain important content */
-    /* header {visibility: hidden;} */
     
-    /* Ensure main content is visible */
-    .main .block-container {
-        visibility: visible !important;
-        display: block !important;
-        opacity: 1 !important;
-    }
-    
-    /* Ensure all Streamlit elements are visible */
-    [data-testid="stAppViewContainer"],
-    [data-testid="stAppViewContainer"] > div {
-        visibility: visible !important;
-        display: block !important;
-        opacity: 1 !important;
-    }
-    
-    /* Ensure markdown content is visible */
-    .stMarkdown,
-    .stMarkdown > * {
-        visibility: visible !important;
-        display: block !important;
-        opacity: 1 !important;
-    }
-    
-    /* Ensure forms are visible */
-    [data-testid="stForm"],
-    form {
-        visibility: visible !important;
-        display: block !important;
-        opacity: 1 !important;
-    }
-    
-    /* Ensure columns are visible */
-    [data-testid="column"],
-    .stColumn {
-        visibility: visible !important;
-        display: block !important;
-        opacity: 1 !important;
-    }
-    
-    /* Ensure all text is visible */
-    p, h1, h2, h3, h4, h5, h6, div, span {
-        color: inherit !important;
-    }
+    /* Don't hide anything else - keep all content visible */
+    /* Removed aggressive visibility rules that might hide content */
     
     /* Smooth Scrolling */
     html {
@@ -628,7 +585,7 @@ st.sidebar.markdown("---")
 page = st.sidebar.radio(
     "📋 Chọn chức năng:",
     ["🏠 Trang chủ", "💰 Dự đoán giá", "🚨 Phát hiện bất thường", "🔍 Gợi ý xe tương tự", "📊 Phân cụm dữ liệu"],
-    label_visibility="collapsed"
+    label_visibility="visible"
 )
 
 # Import modules (lazy loading)
