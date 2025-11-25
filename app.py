@@ -544,12 +544,26 @@ st.markdown("""
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     }
     
-    /* Hide Streamlit branding only */
+    /* Hide Streamlit branding only - be careful not to hide content */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Don't hide anything else - keep all content visible */
-    /* Removed aggressive visibility rules that might hide content */
+    /* Ensure main content area is always visible */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
+    }
+    
+    /* Make sure all content is visible - no aggressive hiding */
+    body, html {
+        visibility: visible !important;
+    }
+    
+    /* Ensure Streamlit elements are visible */
+    [data-testid="stAppViewContainer"] {
+        visibility: visible !important;
+    }
     
     /* Smooth Scrolling */
     html {
