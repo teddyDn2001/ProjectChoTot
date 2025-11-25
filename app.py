@@ -596,10 +596,32 @@ def load_price_model():
         
         # Check if files exist with detailed error messages
         if not PRICE_MODEL_PATH.exists():
-            return None, None, f"❌ Không tìm thấy file model: {PRICE_MODEL_PATH}\n\n💡 Có thể models chưa được upload lên GitHub. Vui lòng kiểm tra lại."
+            return None, None, f"""❌ Không tìm thấy file model: `{PRICE_MODEL_PATH}`
+
+**💡 Nguyên nhân có thể:**
+1. File chưa được push lên GitHub (file này dùng Git LFS vì lớn 113MB)
+2. Streamlit Cloud chưa pull Git LFS files
+3. File path không đúng trên Streamlit Cloud
+
+**🔧 Cách khắc phục:**
+1. Kiểm tra file có trên GitHub: https://github.com/teddyDn2001/ProjectChoTot/tree/main/project1/models
+2. Nếu file là pointer (text nhỏ) → Git LFS chưa được push đúng
+3. Push lại Git LFS: `git lfs push origin main --all`
+4. Reload app trên Streamlit Cloud (click "Relaunch to update")
+5. Xem hướng dẫn chi tiết trong file `FIX_MODELS.md`"""
         
         if not PREPROCESSOR_PATH.exists():
-            return None, None, f"❌ Không tìm thấy file preprocessor: {PREPROCESSOR_PATH}\n\n💡 Có thể preprocessor chưa được upload lên GitHub. Vui lòng kiểm tra lại."
+            return None, None, f"""❌ Không tìm thấy file preprocessor: `{PREPROCESSOR_PATH}`
+
+**💡 Nguyên nhân có thể:**
+1. File chưa được push lên GitHub (file này dùng Git LFS)
+2. Streamlit Cloud chưa pull Git LFS files
+3. File path không đúng
+
+**🔧 Cách khắc phục:**
+1. Kiểm tra file có trên GitHub: https://github.com/teddyDn2001/ProjectChoTot/tree/main/project1/artifacts
+2. Push lại Git LFS: `git lfs push origin main --all`
+3. Reload app trên Streamlit Cloud"""
         
         # Load model - check if it's a dict or direct model
         try:
