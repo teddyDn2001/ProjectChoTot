@@ -21,24 +21,543 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Enhanced Custom CSS with Modern UI
 st.markdown("""
 <style>
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+    
+    /* Global Styles */
+    * {
+        font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Main Container */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
+    }
+    
+    /* Main Header with Animation */
     .main-header {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #1f77b4;
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
         margin-bottom: 2rem;
+        padding: 1rem 0;
+        animation: gradient-shift 3s ease infinite;
+        background-size: 200% 200%;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
+    
+    @keyframes gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
     }
+    
+    /* Feature Cards with Glassmorphism */
+    .feature-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 2.5rem;
+        border-radius: 1.25rem;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .feature-card:hover::before {
+        left: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* Status Cards Enhanced */
+    .status-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-left: 5px solid #667eea;
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .status-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea, #764ba2);
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .status-card.success {
+        border-left-color: #10b981;
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    }
+    
+    .status-card.success::after {
+        background: linear-gradient(180deg, #10b981, #059669);
+    }
+    
+    .status-card.error {
+        border-left-color: #ef4444;
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    }
+    
+    .status-card.error::after {
+        background: linear-gradient(180deg, #ef4444, #dc2626);
+    }
+    
+    .status-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+    }
+    
+    /* Enhanced Buttons */
     .stButton>button {
         width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        padding: 0.875rem 2rem;
+        border-radius: 0.75rem;
+        border: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stButton>button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .stButton>button:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    }
+    
+    .stButton>button:active {
+        transform: translateY(-1px);
+    }
+    
+    /* Form Styling */
+    .stSelectbox>div>div, .stTextInput>div>div>input {
+        border-radius: 0.5rem;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .stSelectbox>div>div:focus, .stTextInput>div>div>input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    /* Sidebar */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Success/Error Messages */
+    .stSuccess {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        border-left: 4px solid #10b981;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    
+    .stError {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-left: 4px solid #ef4444;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    
+    /* Enhanced Form Inputs */
+    .stSelectbox>div>div, .stTextInput>div>div>input, .stNumberInput>div>div>input {
+        border-radius: 0.75rem;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .stSelectbox>div>div:hover, .stTextInput>div>div>input:hover, .stNumberInput>div>div>input:hover {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.05);
+    }
+    
+    .stSelectbox>div>div:focus-within, .stTextInput>div>div>input:focus, .stNumberInput>div>div>input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        outline: none;
+    }
+    
+    /* Info Boxes Enhanced */
+    .info-box {
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid #3b82f6;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .info-box:hover {
+        transform: translateX(5px);
+        box-shadow: 0 6px 30px rgba(59, 130, 246, 0.15);
+    }
+    
+    /* Price Display with Animation */
+    .price-display {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        padding: 1.5rem;
+        animation: price-glow 2s ease-in-out infinite;
+        background-size: 200% 200%;
+    }
+    
+    @keyframes price-glow {
+        0%, 100% { 
+            background-position: 0% 50%;
+            filter: drop-shadow(0 0 10px rgba(245, 87, 108, 0.3));
+        }
+        50% { 
+            background-position: 100% 50%;
+            filter: drop-shadow(0 0 20px rgba(245, 87, 108, 0.5));
+        }
+    }
+    
+    /* Enhanced Loading Animation */
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .loading {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(102, 126, 234, 0.3);
+        border-radius: 50%;
+        border-top-color: #667eea;
+        animation: spin 1s linear infinite;
+    }
+    
+    /* Card Grid Enhanced */
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    /* Badge/Tag Styling */
+    .badge {
+        display: inline-block;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    .badge-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .badge-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .badge-error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    /* Enhanced Divider */
+    hr {
+        border: none;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #667eea 20%, #764ba2 50%, #667eea 80%, transparent);
+        margin: 3rem 0;
+        border-radius: 2px;
+        opacity: 0.6;
+    }
+    
+    /* Tooltip Enhanced */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+    }
+    
+    .tooltip:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.5rem 1rem;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    /* Progress Bar Enhanced */
+    .stProgress>div>div>div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Table/Dataframe Styling */
+    .dataframe {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .dataframe thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .dataframe tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+        transition: background 0.2s ease;
+    }
+    
+    /* Sidebar Enhanced */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    section[data-testid="stSidebar"] .css-1d391kg {
+        background: transparent;
+    }
+    
+    /* Success/Error/Info Messages Enhanced */
+    .stSuccess {
+        background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid #10b981;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
+    }
+    
+    .stError {
+        background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid #ef4444;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+    }
+    
+    .stInfo {
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid #3b82f6;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
+    }
+    
+    .stWarning {
+        background: linear-gradient(135deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 243, 199, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid #f59e0b;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+    }
+    
+    /* Metrics Enhanced */
+    [data-testid="stMetricValue"] {
+        font-size: 2.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    
+    /* Expander Enhanced */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        transform: translateX(5px);
+    }
+    
+    /* Tabs Enhanced */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 2.5rem;
+        }
+        
+        .feature-card {
+            padding: 1.5rem;
+        }
+        
+        .price-display {
+            font-size: 2.5rem;
+        }
+        
+        .card-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Smooth Scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Selection Color */
+    ::selection {
+        background: rgba(102, 126, 234, 0.3);
+        color: #1f2937;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -49,13 +568,22 @@ if 'data_loaded' not in st.session_state:
 if 'models_loaded' not in st.session_state:
     st.session_state.models_loaded = False
 
-# Sidebar navigation
-st.sidebar.title("🏍️ Motorbike Analysis")
+# Enhanced Sidebar navigation
+st.sidebar.markdown("""
+<div style='text-align: center; padding: 1rem 0;'>
+    <h1 style='font-size: 2rem; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
+        🏍️ Motorbike Analysis
+    </h1>
+    <p style='color: #6b7280; font-size: 0.9rem; margin-top: 0.5rem;'>Platform phân tích xe máy</p>
+</div>
+""", unsafe_allow_html=True)
+
 st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
-    "Chọn chức năng:",
-    ["🏠 Trang chủ", "💰 Dự đoán giá", "🚨 Phát hiện bất thường", "🔍 Gợi ý xe tương tự", "📊 Phân cụm dữ liệu"]
+    "📋 Chọn chức năng:",
+    ["🏠 Trang chủ", "💰 Dự đoán giá", "🚨 Phát hiện bất thường", "🔍 Gợi ý xe tương tự", "📊 Phân cụm dữ liệu"],
+    label_visibility="collapsed"
 )
 
 # Import modules (lazy loading)
@@ -66,11 +594,19 @@ def load_price_model():
         from project1.config import PRICE_MODEL_PATH, PREPROCESSOR_PATH
         import joblib
         
-        if not PRICE_MODEL_PATH.exists() or not PREPROCESSOR_PATH.exists():
-            return None, None, "Models chưa được train. Vui lòng chạy notebooks trong project1/ để tạo models."
+        # Check if files exist with detailed error messages
+        if not PRICE_MODEL_PATH.exists():
+            return None, None, f"❌ Không tìm thấy file model: {PRICE_MODEL_PATH}\n\n💡 Có thể models chưa được upload lên GitHub. Vui lòng kiểm tra lại."
+        
+        if not PREPROCESSOR_PATH.exists():
+            return None, None, f"❌ Không tìm thấy file preprocessor: {PREPROCESSOR_PATH}\n\n💡 Có thể preprocessor chưa được upload lên GitHub. Vui lòng kiểm tra lại."
         
         # Load model - check if it's a dict or direct model
-        model_data = joblib.load(PRICE_MODEL_PATH)
+        try:
+            model_data = joblib.load(PRICE_MODEL_PATH)
+        except Exception as e:
+            return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
+        
         if isinstance(model_data, dict):
             # Extract model from dict (could be 'model', 'price_model', or direct)
             model = model_data.get('model', model_data.get('price_model', model_data))
@@ -81,15 +617,23 @@ def load_price_model():
             model = model_data
         
         # Load preprocessor
-        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        try:
+            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        except Exception as e:
+            return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
+        
         if isinstance(preprocessor_data, dict):
-            preprocessor = preprocessor_data['preprocessor']
+            preprocessor = preprocessor_data.get('preprocessor')
+            if preprocessor is None:
+                return None, None, "❌ Preprocessor không có trong file. Cấu trúc file không đúng."
         else:
             preprocessor = preprocessor_data
         
         return model, preprocessor, None
     except Exception as e:
-        return None, None, f"Lỗi khi load model: {str(e)}"
+        import traceback
+        error_details = traceback.format_exc()
+        return None, None, f"❌ Lỗi khi load model: {str(e)}\n\n<details><summary>Chi tiết lỗi</summary>\n\n```\n{error_details}\n```\n</details>"
 
 @st.cache_resource
 def load_anomaly_model():
@@ -98,21 +642,41 @@ def load_anomaly_model():
         from project1.config import ISO_MODEL_PATH, PREPROCESSOR_PATH
         import joblib
         
-        if not ISO_MODEL_PATH.exists() or not PREPROCESSOR_PATH.exists():
-            return None, None, "Models chưa được train."
+        # Check if files exist with detailed error messages
+        if not ISO_MODEL_PATH.exists():
+            return None, None, f"❌ Không tìm thấy file model: {ISO_MODEL_PATH}\n\n💡 Có thể models chưa được upload lên GitHub. Vui lòng kiểm tra lại."
         
-        iso_data = joblib.load(ISO_MODEL_PATH)
+        if not PREPROCESSOR_PATH.exists():
+            return None, None, f"❌ Không tìm thấy file preprocessor: {PREPROCESSOR_PATH}\n\n💡 Có thể preprocessor chưa được upload lên GitHub. Vui lòng kiểm tra lại."
+        
+        try:
+            iso_data = joblib.load(ISO_MODEL_PATH)
+        except Exception as e:
+            return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
+        
         # Check if it's a dict (saved with metadata) or direct model
         if isinstance(iso_data, dict):
             iso_model = iso_data.get('model', iso_data.get('iso_model', iso_data))
         else:
             iso_model = iso_data
         
-        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-        preprocessor = preprocessor_data['preprocessor']
+        try:
+            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        except Exception as e:
+            return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
+        
+        if isinstance(preprocessor_data, dict):
+            preprocessor = preprocessor_data.get('preprocessor')
+            if preprocessor is None:
+                return None, None, "❌ Preprocessor không có trong file. Cấu trúc file không đúng."
+        else:
+            preprocessor = preprocessor_data
+        
         return iso_model, preprocessor, None
     except Exception as e:
-        return None, None, f"Lỗi khi load model: {str(e)}"
+        import traceback
+        error_details = traceback.format_exc()
+        return None, None, f"❌ Lỗi khi load model: {str(e)}\n\n<details><summary>Chi tiết lỗi</summary>\n\n```\n{error_details}\n```\n</details>"
 
 @st.cache_data
 def load_sample_data():
@@ -130,47 +694,95 @@ def load_sample_data():
         
         for path in possible_paths:
             if path.exists():
-                # Load FULL dataset, not just sample
-                df = pd.read_csv(path, low_memory=False)
-                return df, None
+                try:
+                    # Load FULL dataset, not just sample
+                    df = pd.read_csv(path, low_memory=False)
+                    if len(df) == 0:
+                        return None, f"❌ File dữ liệu rỗng: {path}"
+                    return df, None
+                except Exception as e:
+                    return None, f"❌ Lỗi khi đọc file {path}: {str(e)}"
         
-        return None, f"Không tìm thấy file dữ liệu. Đã thử: {[str(p) for p in possible_paths]}"
+        paths_tried = "\n".join([f"  - {p}" for p in possible_paths])
+        return None, f"❌ Không tìm thấy file dữ liệu.\n\nĐã thử các đường dẫn sau:\n{paths_tried}\n\n💡 Có thể file data chưa được upload lên GitHub. Vui lòng kiểm tra lại."
     except Exception as e:
-        return None, f"Lỗi khi load dữ liệu: {str(e)}"
+        import traceback
+        error_details = traceback.format_exc()
+        return None, f"❌ Lỗi khi load dữ liệu: {str(e)}\n\n<details><summary>Chi tiết lỗi</summary>\n\n```\n{error_details}\n```\n</details>"
 
 # Home page
 if page == "🏠 Trang chủ":
     st.markdown('<div class="main-header">🏍️ Motorbike Analysis Platform</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align: center; color: #6b7280; margin-bottom: 3rem; font-size: 1.15rem; line-height: 1.8;'>
+        <p style='margin-bottom: 0.5rem;'>Nền tảng phân tích và dự đoán giá xe máy thông minh</p>
+        <p style='margin: 0; font-size: 1rem;'>
+            Dựa trên dữ liệu từ <strong style='color: #667eea;'>Chợ Tốt</strong> với 
+            <span class="badge" style='display: inline-block; padding: 0.25rem 0.75rem; margin: 0 0.5rem;'>7,208+ tin đăng</span>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
+    # Feature Cards with Enhanced Design
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("### 💰 Dự đoán giá")
         st.markdown("""
-        Dự đoán giá xe máy dựa trên:
-        - Thương hiệu, dòng xe
-        - Năm đăng ký, số km
-        - Tình trạng, dung tích
-        """)
+        <div class="feature-card">
+            <div style='font-size: 3rem; margin-bottom: 1rem; text-align: center;'>💰</div>
+            <h2 style='color: #667eea; margin-top: 0; text-align: center; font-size: 1.5rem;'>Dự đoán giá</h2>
+            <p style='color: #4b5563; line-height: 1.8; text-align: center;'>
+                Dự đoán giá xe máy chính xác dựa trên:
+            </p>
+            <ul style='color: #6b7280; line-height: 2;'>
+                <li>✨ Thương hiệu, dòng xe</li>
+                <li>📅 Năm đăng ký, số km</li>
+                <li>🔧 Tình trạng, dung tích</li>
+                <li>📍 Vị trí, xuất xứ</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("### 🚨 Phát hiện bất thường")
         st.markdown("""
-        Phát hiện các tin đăng có giá bất thường:
-        - Residual-based detection
-        - Isolation Forest
-        """)
+        <div class="feature-card">
+            <h2 style='color: #f59e0b; margin-top: 0;'>🚨 Phát hiện bất thường</h2>
+            <p style='color: #4b5563; line-height: 1.8;'>
+                Phát hiện các tin đăng có giá bất thường:
+            </p>
+            <ul style='color: #6b7280; line-height: 2;'>
+                <li>🔍 Residual-based detection</li>
+                <li>🌲 Isolation Forest</li>
+                <li>📊 So sánh với thị trường</li>
+                <li>⚠️ Cảnh báo giá bất thường</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col3:
-        st.markdown("### 🔍 Gợi ý")
         st.markdown("""
-        Tìm xe máy tương tự:
-        - KNN-based recommendation
-        - Content-based filtering
-        """)
+        <div class="feature-card">
+            <h2 style='color: #10b981; margin-top: 0;'>🔍 Gợi ý xe tương tự</h2>
+            <p style='color: #4b5563; line-height: 1.8;'>
+                Tìm xe máy tương tự thông minh:
+            </p>
+            <ul style='color: #6b7280; line-height: 2;'>
+                <li>🎯 KNN-based recommendation</li>
+                <li>📝 Content-based filtering</li>
+                <li>🔎 Tìm kiếm đa tiêu chí</li>
+                <li>💡 Gợi ý phù hợp nhất</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
-    st.markdown("### 📊 Thống kê")
+    
+    # Status Section with better UI
+    st.markdown("""
+    <div style='text-align: center; margin: 2rem 0;'>
+        <h2 style='color: #1f2937; margin-bottom: 1.5rem;'>📊 Trạng thái hệ thống</h2>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Check models status
     price_model, _, price_err = load_price_model()
@@ -181,53 +793,119 @@ if page == "🏠 Trang chủ":
     
     with status_col1:
         if price_model:
-            st.success("✅ Price Model: Sẵn sàng")
+            st.markdown("""
+            <div class="status-card success">
+                <h3 style='color: #10b981; margin-top: 0;'>💰 Price Model</h3>
+                <p style='font-size: 1.2rem; font-weight: 600; color: #059669;'>✅ Sẵn sàng</p>
+                <p style='color: #6b7280; font-size: 0.9rem;'>Model dự đoán giá đã được tải thành công</p>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.error(f"❌ Price Model: {price_err or 'Chưa load'}")
+            st.markdown(f"""
+            <div class="status-card error">
+                <h3 style='color: #ef4444; margin-top: 0;'>💰 Price Model</h3>
+                <p style='font-size: 1rem; font-weight: 600; color: #dc2626;'>❌ Chưa sẵn sàng</p>
+                <p style='color: #6b7280; font-size: 0.85rem;'>{price_err or 'Chưa load'}</p>
+            </div>
+            """, unsafe_allow_html=True)
     
     with status_col2:
         if anomaly_model:
-            st.success("✅ Anomaly Model: Sẵn sàng")
+            st.markdown("""
+            <div class="status-card success">
+                <h3 style='color: #10b981; margin-top: 0;'>🚨 Anomaly Model</h3>
+                <p style='font-size: 1.2rem; font-weight: 600; color: #059669;'>✅ Sẵn sàng</p>
+                <p style='color: #6b7280; font-size: 0.9rem;'>Model phát hiện bất thường đã được tải thành công</p>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.error(f"❌ Anomaly Model: {anomaly_err or 'Chưa load'}")
+            st.markdown(f"""
+            <div class="status-card error">
+                <h3 style='color: #ef4444; margin-top: 0;'>🚨 Anomaly Model</h3>
+                <p style='font-size: 1rem; font-weight: 600; color: #dc2626;'>❌ Chưa sẵn sàng</p>
+                <p style='color: #6b7280; font-size: 0.85rem;'>{anomaly_err or 'Chưa load'}</p>
+            </div>
+            """, unsafe_allow_html=True)
     
     with status_col3:
         if sample_data is not None:
-            st.success(f"✅ Data: {len(sample_data):,} records")
+            st.markdown(f"""
+            <div class="status-card success">
+                <h3 style='color: #10b981; margin-top: 0;'>📊 Dataset</h3>
+                <p style='font-size: 1.2rem; font-weight: 600; color: #059669;'>✅ {len(sample_data):,} records</p>
+                <p style='color: #6b7280; font-size: 0.9rem;'>Dữ liệu đã được tải thành công</p>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.error(f"❌ Data: {data_err or 'Chưa load'}")
+            st.markdown(f"""
+            <div class="status-card error">
+                <h3 style='color: #ef4444; margin-top: 0;'>📊 Dataset</h3>
+                <p style='font-size: 1rem; font-weight: 600; color: #dc2626;'>❌ Chưa sẵn sàng</p>
+                <p style='color: #6b7280; font-size: 0.85rem;'>{data_err or 'Chưa load'}</p>
+            </div>
+            """, unsafe_allow_html=True)
     
     st.markdown("---")
-    st.markdown("### 👤 Thông tin tác giả")
+    
+    # Author Info Section
+    st.markdown("""
+    <div style='text-align: center; margin: 2rem 0;'>
+        <h2 style='color: #1f2937; margin-bottom: 1.5rem;'>👤 Thông tin tác giả</h2>
+    </div>
+    """, unsafe_allow_html=True)
     
     author_col1, author_col2 = st.columns(2)
     
     with author_col1:
         st.markdown("""
-        **👨‍💻 Tác giả:** Đoàn Anh  
-        **📧 Email:** anhwin01@gmail.com  
-        **🔗 GitHub:** [teddyDn2001](https://github.com/teddyDn2001)  
-        **📚 Repository:** [ProjectChoTot](https://github.com/teddyDn2001/ProjectChoTot)
-        """)
+        <div class="info-box">
+            <h3 style='color: #667eea; margin-top: 0;'>👨‍💻 Thông tin cá nhân</h3>
+            <p style='line-height: 2.5; color: #4b5563;'>
+                <strong>👤 Tác giả:</strong> Đoàn Anh<br>
+                <strong>📧 Email:</strong> <a href="mailto:anhwin01@gmail.com" style='color: #667eea; text-decoration: none;'>anhwin01@gmail.com</a><br>
+                <strong>🔗 GitHub:</strong> <a href="https://github.com/teddyDn2001" target="_blank" style='color: #667eea; text-decoration: none;'>@teddyDn2001</a><br>
+                <strong>📚 Repository:</strong> <a href="https://github.com/teddyDn2001/ProjectChoTot" target="_blank" style='color: #667eea; text-decoration: none;'>ProjectChoTot</a>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     
     with author_col2:
         st.markdown("""
-        **🎓 Đồ án:** Data Science  
-        **📊 Dataset:** Chợ Tốt - 7,208 tin rao bán xe máy  
-        **🏍️ Phạm vi:** TP.HCM  
-        **📅 Năm:** 2024
-        """)
+        <div class="info-box">
+            <h3 style='color: #667eea; margin-top: 0;'>📊 Thông tin dự án</h3>
+            <p style='line-height: 2.5; color: #4b5563;'>
+                <strong>🎓 Đồ án:</strong> Data Science<br>
+                <strong>📊 Dataset:</strong> Chợ Tốt - 7,208 tin rao<br>
+                <strong>🏍️ Phạm vi:</strong> TP.HCM<br>
+                <strong>📅 Năm:</strong> 2024
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Price Prediction page
 elif page == "💰 Dự đoán giá":
-    st.title("💰 Dự đoán giá xe máy")
-    st.markdown("Nhập thông tin xe để dự đoán giá")
+    st.markdown("""
+    <div style='text-align: center; margin-bottom: 2rem;'>
+        <h1 style='font-size: 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;'>
+            💰 Dự đoán giá xe máy
+        </h1>
+        <p style='color: #6b7280; font-size: 1.1rem;'>Nhập thông tin xe để nhận dự đoán giá chính xác</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     model, preprocessor, error = load_price_model()
     
     if error:
         st.error(error)
-        st.info("💡 Hướng dẫn: Chạy các notebooks trong project1/ để train models trước.")
+        st.markdown("---")
+        st.info("""
+        **💡 Hướng dẫn khắc phục:**
+        1. Kiểm tra xem models đã được push lên GitHub chưa
+        2. Đảm bảo files `project1/models/price_model.joblib` và `project1/artifacts/preprocessor.joblib` có trên GitHub
+        3. Nếu files quá lớn (>100MB), cần dùng Git LFS
+        4. Sau khi push, đợi vài phút để Streamlit Cloud sync lại
+        """)
+        st.stop()
     else:
         with st.form("price_prediction_form"):
             col1, col2 = st.columns(2)
@@ -304,9 +982,27 @@ elif page == "💰 Dự đoán giá":
                     if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
                         st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
                     else:
-                        # Display result
-                        st.success(f"### 💰 Giá dự đoán: {prediction:,.0f} VNĐ")
-                        st.info(f"≈ {prediction/1_000_000:.2f} triệu VNĐ")
+                        # Display result with beautiful UI
+                        st.markdown("---")
+                        st.markdown("""
+                        <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);'>
+                            <div style='font-size: 4rem; margin-bottom: 1rem;'>💰</div>
+                            <h3 style='color: #6b7280; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 600;'>Giá dự đoán</h3>
+                            <div class="price-display">{:,.0f} VNĐ</div>
+                            <p style='font-size: 1.75rem; color: #667eea; font-weight: 700; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.5); border-radius: 0.75rem; display: inline-block;'>
+                                ≈ {:.2f} triệu VNĐ
+                            </p>
+                        </div>
+                        """.format(prediction, prediction/1_000_000), unsafe_allow_html=True)
+                        
+                        # Additional info
+                        col_info1, col_info2, col_info3 = st.columns(3)
+                        with col_info1:
+                            st.metric("Thương hiệu", thuong_hieu)
+                        with col_info2:
+                            st.metric("Năm đăng ký", nam_dang_ky)
+                        with col_info3:
+                            st.metric("Số km", f"{so_km:,} km")
                     
                 except Exception as e:
                     st.error(f"Lỗi khi dự đoán: {str(e)}")
@@ -316,13 +1012,28 @@ elif page == "💰 Dự đoán giá":
 
 # Anomaly Detection page
 elif page == "🚨 Phát hiện bất thường":
-    st.title("🚨 Phát hiện giá bất thường")
-    st.markdown("Kiểm tra xem giá xe có bất thường so với thị trường không")
+    st.markdown("""
+    <div style='text-align: center; margin-bottom: 2rem;'>
+        <h1 style='font-size: 2.5rem; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;'>
+            🚨 Phát hiện giá bất thường
+        </h1>
+        <p style='color: #6b7280; font-size: 1.1rem;'>Kiểm tra xem giá xe có bất thường so với thị trường không</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     model, preprocessor, error = load_anomaly_model()
     
     if error:
         st.error(error)
+        st.markdown("---")
+        st.info("""
+        **💡 Hướng dẫn khắc phục:**
+        1. Kiểm tra xem models đã được push lên GitHub chưa
+        2. Đảm bảo files `project1/models/iso_model.joblib` và `project1/artifacts/preprocessor.joblib` có trên GitHub
+        3. Nếu files quá lớn, cần dùng Git LFS
+        4. Sau khi push, đợi vài phút để Streamlit Cloud sync lại
+        """)
+        st.stop()
     else:
         st.info("Nhập thông tin xe và giá để kiểm tra")
         
@@ -376,46 +1087,94 @@ elif page == "🚨 Phát hiện bất thường":
                         'quan': [""]
                     }, columns=all_features)  # Ensure correct column order
                     
-                    # Transform
+                    # Transform features
                     X_transformed = preprocessor.transform(input_data)
                     
-                    # Handle sparse matrix
-                    if hasattr(X_transformed, 'toarray'):
-                        X_transformed = X_transformed.toarray()
+                    # CRITICAL: IsolationForest model was trained with log_price as additional feature
+                    # Model expects 279 features: 278 from preprocessor + 1 log_price
+                    # Add log_price feature (log of the price user entered)
+                    from scipy import sparse
+                    import scipy.sparse as sp
                     
-                    # Predict anomaly
-                    anomaly_score = model.decision_function(X_transformed)[0]
-                    predictions = model.predict(X_transformed)
+                    # Calculate log_price (same as training: log1p of price)
+                    price_for_iso = max(0, gia_vnd)  # Ensure non-negative
+                    log_price = np.log1p(price_for_iso).reshape(-1, 1)
+                    
+                    # Concatenate transformed features with log_price
+                    if sparse.issparse(X_transformed):
+                        from scipy.sparse import hstack, csr_matrix
+                        X_transformed_aug = hstack([X_transformed, csr_matrix(log_price)])
+                    else:
+                        X_transformed_aug = np.hstack([X_transformed, log_price])
+                    
+                    # Convert to dense if needed for prediction
+                    if hasattr(X_transformed_aug, 'toarray'):
+                        X_transformed_aug = X_transformed_aug.toarray()
+                    
+                    # Predict anomaly with augmented features (279 features)
+                    anomaly_score = model.decision_function(X_transformed_aug)[0]
+                    predictions = model.predict(X_transformed_aug)
                     is_anomaly = predictions[0] == -1
                     
                     # Validate scores
                     if np.isnan(anomaly_score) or np.isinf(anomaly_score):
                         st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
                     else:
-                        # Display result
+                        # Display result with enhanced UI
                         if is_anomaly:
-                            st.error("### ⚠️ Phát hiện giá BẤT THƯỜNG")
-                            st.warning(f"Anomaly score: {anomaly_score:.4f}")
-                            st.info("Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại.")
+                            st.markdown("""
+                            <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2); border: 3px solid #ef4444;'>
+                                <div style='font-size: 4rem; margin-bottom: 1rem;'>⚠️</div>
+                                <h2 style='color: #dc2626; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Phát hiện giá BẤT THƯỜNG</h2>
+                                <p style='font-size: 1.3rem; color: #991b1b; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
+                                <p style='color: #7f1d1d; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại thông tin và so sánh với các xe tương tự.</p>
+                            </div>
+                            """.format(anomaly_score), unsafe_allow_html=True)
                             
                             # Show predicted price for comparison
                             try:
                                 price_model, _, _ = load_price_model()
                                 if price_model is not None:
-                                    price_pred = price_model.predict(X_transformed)[0]
+                                    # Use X_transformed (278 features) for price prediction, not X_transformed_aug
+                                    if hasattr(X_transformed, 'toarray'):
+                                        X_for_price = X_transformed.toarray()
+                                    else:
+                                        X_for_price = X_transformed
+                                    
+                                    price_pred = price_model.predict(X_for_price)[0]
                                     if price_pred > 0:
-                                        st.info(f"💡 Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ")
-                                        st.info(f"💡 Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ")
+                                        st.markdown("---")
+                                        col_comp1, col_comp2 = st.columns(2)
+                                        with col_comp1:
+                                            st.markdown("""
+                                            <div style='padding: 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 1rem; border-left: 4px solid #3b82f6;'>
+                                                <h3 style='color: #1e40af; margin-top: 0;'>💡 Giá dự đoán hợp lý</h3>
+                                                <p style='font-size: 1.5rem; font-weight: 700; color: #1e3a8a;'>{:.2f} triệu VNĐ</p>
+                                            </div>
+                                            """.format(price_pred/1_000_000), unsafe_allow_html=True)
+                                        with col_comp2:
+                                            st.markdown("""
+                                            <div style='padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 1rem; border-left: 4px solid #f59e0b;'>
+                                                <h3 style='color: #92400e; margin-top: 0;'>💰 Giá bạn nhập</h3>
+                                                <p style='font-size: 1.5rem; font-weight: 700; color: #78350f;'>{:.2f} triệu VNĐ</p>
+                                            </div>
+                                            """.format(gia_vnd/1_000_000), unsafe_allow_html=True)
+                                        
                                         diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
                                         if diff_pct > 30:
-                                            st.warning(f"⚠️ Chênh lệch {diff_pct:.1f}% so với giá dự đoán - đây là lý do phát hiện bất thường")
+                                            st.warning(f"⚠️ **Chênh lệch {diff_pct:.1f}%** so với giá dự đoán - đây là lý do phát hiện bất thường")
                             except Exception as e:
                                 # Silently fail - not critical
                                 pass
                         else:
-                            st.success("### ✅ Giá BÌNH THƯỜNG")
-                            st.info(f"Anomaly score: {anomaly_score:.4f}")
-                            st.success("Giá này phù hợp với thị trường.")
+                            st.markdown("""
+                            <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2); border: 3px solid #10b981;'>
+                                <div style='font-size: 4rem; margin-bottom: 1rem;'>✅</div>
+                                <h2 style='color: #059669; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Giá BÌNH THƯỜNG</h2>
+                                <p style='font-size: 1.3rem; color: #047857; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
+                                <p style='color: #065f46; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này phù hợp với thị trường. Bạn có thể yên tâm về mức giá này.</p>
+                            </div>
+                            """.format(anomaly_score), unsafe_allow_html=True)
                         
                 except Exception as e:
                     st.error(f"Lỗi: {str(e)}")
@@ -425,13 +1184,28 @@ elif page == "🚨 Phát hiện bất thường":
 
 # Recommendation page
 elif page == "🔍 Gợi ý xe tương tự":
-    st.title("🔍 Tìm xe máy tương tự")
-    st.markdown("Nhập ID hoặc thông tin xe để tìm các xe tương tự")
+    st.markdown("""
+    <div style='text-align: center; margin-bottom: 2rem;'>
+        <h1 style='font-size: 2.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;'>
+            🔍 Tìm xe máy tương tự
+        </h1>
+        <p style='color: #6b7280; font-size: 1.1rem;'>Nhập ID hoặc thông tin xe để tìm các xe tương tự</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     sample_data, error = load_sample_data()
     
     if error:
         st.error(error)
+        st.markdown("---")
+        st.info("""
+        **💡 Hướng dẫn khắc phục:**
+        1. Kiểm tra xem file data đã được push lên GitHub chưa
+        2. Đảm bảo file `data/data_motobikes.xlsx - Sheet1.csv` có trên GitHub
+        3. Nếu file quá lớn, cần dùng Git LFS
+        4. Sau khi push, đợi vài phút để Streamlit Cloud sync lại
+        """)
+        st.stop()
     else:
         st.success(f"📊 Đã load **{len(sample_data):,}** records từ dataset Chợ Tốt (toàn bộ dữ liệu)")
         
@@ -585,14 +1359,38 @@ elif page == "🔍 Gợi ý xe tương tự":
 
 # Clustering page
 elif page == "📊 Phân cụm dữ liệu":
-    st.title("📊 Phân cụm dữ liệu - Phân khúc thị trường xe máy")
     st.markdown("""
-    **Phân cụm dữ liệu giúp:**
-    - 🎯 Phân khúc thị trường: Chia xe máy thành các nhóm có đặc điểm tương đồng
-    - 👥 Hiểu khách hàng: Mỗi phân khúc đại diện cho một nhóm khách hàng khác nhau
-    - 💰 Định giá hợp lý: Biết xe thuộc phân khúc nào để định giá phù hợp
-    - 🔍 Gợi ý sản phẩm: Đề xuất xe tương tự trong cùng phân khúc
-    """)
+    <div style='text-align: center; margin-bottom: 2rem;'>
+        <h1 style='font-size: 2.5rem; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;'>
+            📊 Phân cụm dữ liệu
+        </h1>
+        <p style='color: #6b7280; font-size: 1.1rem;'>Phân khúc thị trường xe máy thông minh</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box" style='margin-bottom: 2rem;'>
+        <h3 style='color: #3b82f6; margin-top: 0;'>💡 Phân cụm dữ liệu giúp:</h3>
+        <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;'>
+            <div>
+                <strong>🎯 Phân khúc thị trường</strong><br>
+                <span style='color: #6b7280;'>Chia xe máy thành các nhóm có đặc điểm tương đồng</span>
+            </div>
+            <div>
+                <strong>👥 Hiểu khách hàng</strong><br>
+                <span style='color: #6b7280;'>Mỗi phân khúc đại diện cho một nhóm khách hàng khác nhau</span>
+            </div>
+            <div>
+                <strong>💰 Định giá hợp lý</strong><br>
+                <span style='color: #6b7280;'>Biết xe thuộc phân khúc nào để định giá phù hợp</span>
+            </div>
+            <div>
+                <strong>🔍 Gợi ý sản phẩm</strong><br>
+                <span style='color: #6b7280;'>Đề xuất xe tương tự trong cùng phân khúc</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     sample_data, data_error = load_sample_data()
     
