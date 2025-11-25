@@ -232,13 +232,19 @@ st.markdown("""
     }
     
     /* CRITICAL: Force selectbox selected value to be visible - highest specificity */
+    /* Override any gradient or transparent text fill that might be applied */
     .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"],
     .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] *,
     .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] div,
-    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] span {
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] span,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] p {
         color: #1f2937 !important;
         -webkit-text-fill-color: #1f2937 !important;
+        -webkit-background-clip: unset !important;
+        background: none !important;
+        background-image: none !important;
         opacity: 1 !important;
+        visibility: visible !important;
     }
     
     /* Ensure text is visible in selectbox */
