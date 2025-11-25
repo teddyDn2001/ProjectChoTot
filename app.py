@@ -299,6 +299,109 @@ st.markdown("""
         color: #1f2937 !important;
     }
     
+    /* Ensure selected value in selectbox is visible */
+    [data-baseweb="select"] > div {
+        color: #1f2937 !important;
+    }
+    
+    [data-baseweb="select"] [data-baseweb="select"] > div {
+        color: #1f2937 !important;
+    }
+    
+    /* Selected value text in selectbox input */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
+    }
+    
+    /* Single value display in selectbox */
+    [data-baseweb="select"] [data-baseweb="select"] span,
+    [data-baseweb="select"] span,
+    .stSelectbox [data-baseweb="select"] span,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] span {
+        color: #1f2937 !important;
+    }
+    
+    /* Selected value in selectbox - more specific selectors */
+    .stSelectbox [data-baseweb="select"] > div > div,
+    .stSelectbox [data-baseweb="select"] > div > div > div,
+    .stSelectbox [data-baseweb="select"] > div > div > div > div {
+        color: #1f2937 !important;
+    }
+    
+    /* BaseWeb Select Value */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div {
+        color: #1f2937 !important;
+    }
+    
+    /* All text inside selectbox container */
+    .stSelectbox * {
+        color: inherit;
+    }
+    
+    .stSelectbox [data-baseweb="select"] * {
+        color: #1f2937 !important;
+    }
+    
+    /* More specific selectors for selected value display */
+    div[data-baseweb="select"] > div > div,
+    div[data-baseweb="select"] > div > div > div,
+    div[data-baseweb="select"] > div > div > div > div,
+    div[data-baseweb="select"] > div > div > div > div > span {
+        color: #1f2937 !important;
+    }
+    
+    /* Target the actual displayed value */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div,
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div > span {
+        color: #1f2937 !important;
+    }
+    
+    /* Ensure all p tags and text nodes in selectbox are visible */
+    .stSelectbox p,
+    .stSelectbox [data-baseweb="select"] p,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] p {
+        color: #1f2937 !important;
+    }
+    
+    /* Override any transparent or inherit colors */
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        -webkit-text-fill-color: #1f2937 !important;
+        color: #1f2937 !important;
+    }
+    
+    /* Selected value display - target the actual displayed text */
+    [data-baseweb="select"] > div > div > div,
+    [data-baseweb="select"] > div > div > div > div,
+    [data-baseweb="select"] > div > div > div > div > div,
+    [data-baseweb="select"] > div > div > div > div > div > span {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    /* Ensure all text in selectbox value area is visible */
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div > div,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div > div > div > div > div {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+    }
+    
+    /* Target the value container directly */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
+    }
+    
+    /* All text nodes inside selectbox */
+    .stSelectbox [data-baseweb="select"] * {
+        color: #1f2937 !important;
+    }
+    
+    /* Specific selector for the displayed value */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] > div {
+        color: #1f2937 !important;
+    }
+    
     /* Info Boxes Enhanced */
     .info-box {
         background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%);
