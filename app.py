@@ -544,10 +544,55 @@ st.markdown("""
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     }
     
-    /* Hide Streamlit branding */
+    /* Hide Streamlit branding - but keep content visible */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* Don't hide header completely - it may contain important content */
+    /* header {visibility: hidden;} */
+    
+    /* Ensure main content is visible */
+    .main .block-container {
+        visibility: visible !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure all Streamlit elements are visible */
+    [data-testid="stAppViewContainer"],
+    [data-testid="stAppViewContainer"] > div {
+        visibility: visible !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure markdown content is visible */
+    .stMarkdown,
+    .stMarkdown > * {
+        visibility: visible !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure forms are visible */
+    [data-testid="stForm"],
+    form {
+        visibility: visible !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure columns are visible */
+    [data-testid="column"],
+    .stColumn {
+        visibility: visible !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure all text is visible */
+    p, h1, h2, h3, h4, h5, h6, div, span {
+        color: inherit !important;
+    }
     
     /* Smooth Scrolling */
     html {
@@ -920,16 +965,21 @@ elif page == "💰 Dự đoán giá":
     if error:
         st.error(error)
         st.markdown("---")
+        st.warning("⚠️ **Lưu ý:** Form bên dưới vẫn có thể sử dụng để xem giao diện, nhưng sẽ không thể dự đoán giá cho đến khi models được load thành công.")
         st.info("""
         **💡 Hướng dẫn khắc phục:**
         1. Kiểm tra xem models đã được push lên GitHub chưa
         2. Đảm bảo files `project1/models/price_model.joblib` và `project1/artifacts/preprocessor.joblib` có trên GitHub
         3. Nếu files quá lớn (>100MB), cần dùng Git LFS
         4. Sau khi push, đợi vài phút để Streamlit Cloud sync lại
+        5. Reload app trên Streamlit Cloud (click "Relaunch to update")
         """)
-        st.stop()
-    else:
-        with st.form("price_prediction_form"):
+        st.markdown("---")
+        # Don't stop - show form anyway so user can see the UI
+        # st.stop()
+    
+    # Show form regardless of model status
+    with st.form("price_prediction_form"):
             col1, col2 = st.columns(2)
             
             with col1:
@@ -950,87 +1000,91 @@ elif page == "💰 Dự đoán giá":
             submitted = st.form_submit_button("🔮 Dự đoán giá", use_container_width=True)
             
             if submitted:
-                try:
-                    # Get feature names from preprocessor - MUST use exact order
-                    from project1.config import PREPROCESSOR_PATH
-                    import joblib
-                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-                    if isinstance(preprocessor_data, dict):
-                        numeric_features = preprocessor_data.get('numeric_features', [])
-                        categorical_features = preprocessor_data.get('categorical_features', [])
-                    else:
-                        # Fallback: use default feature names
-                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
-                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
-                    
-                    # CRITICAL: Use exact feature order that preprocessor expects
-                    all_features = numeric_features + categorical_features
-                    
-                    # Prepare input data - must match exact column names and order
-                    input_data = pd.DataFrame({
-                        'so_km': [so_km],
-                        'nam_dang_ky': [nam_dang_ky],
-                        'dung_tich_cc': [dung_tich_cc],
-                        'trong_luong_kg': [np.nan],
-                        'len_title': [len(dong_xe) if dong_xe else 0],
-                        'len_desc': [0],
-                        'thuong_hieu': [thuong_hieu],
-                        'dong_xe': [dong_xe if dong_xe else ""],
-                        'tinh_trang': [tinh_trang],
-                        'loai_xe': [loai_xe],
-                        'xuat_xu': [xuat_xu],
-                        'tinh_thanh': [tinh_thanh],
-                        'quan': [quan if quan else ""]
-                    }, columns=all_features)  # Ensure correct column order
-                    
-                    # Check if model is a Pipeline (contains preprocessor)
-                    from sklearn.pipeline import Pipeline
-                    is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
-                    
-                    if is_pipeline:
-                        # Model already includes preprocessor, use raw input (13 features)
-                        prediction = model.predict(input_data)[0]
-                    else:
-                        # Model needs transformed input (278 features)
-                        X_transformed = preprocessor.transform(input_data)
+                # Check if model is available
+                if error or model is None or preprocessor is None:
+                    st.error("❌ Không thể dự đoán vì model chưa được load. Vui lòng xem hướng dẫn khắc phục ở trên.")
+                else:
+                    try:
+                        # Get feature names from preprocessor - MUST use exact order
+                        from project1.config import PREPROCESSOR_PATH
+                        import joblib
+                        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+                        if isinstance(preprocessor_data, dict):
+                            numeric_features = preprocessor_data.get('numeric_features', [])
+                            categorical_features = preprocessor_data.get('categorical_features', [])
+                        else:
+                            # Fallback: use default feature names
+                            numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                            categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
                         
-                        # Handle sparse matrix
-                        if hasattr(X_transformed, 'toarray'):
-                            X_transformed = X_transformed.toarray()
+                        # CRITICAL: Use exact feature order that preprocessor expects
+                        all_features = numeric_features + categorical_features
                         
-                        prediction = model.predict(X_transformed)[0]
-                    
-                    # Validate prediction
-                    if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
-                        st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
-                    else:
-                        # Display result with beautiful UI
-                        st.markdown("---")
-                        st.markdown("""
-                        <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);'>
-                            <div style='font-size: 4rem; margin-bottom: 1rem;'>💰</div>
-                            <h3 style='color: #6b7280; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 600;'>Giá dự đoán</h3>
-                            <div class="price-display">{:,.0f} VNĐ</div>
-                            <p style='font-size: 1.75rem; color: #667eea; font-weight: 700; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.5); border-radius: 0.75rem; display: inline-block;'>
-                                ≈ {:.2f} triệu VNĐ
-                            </p>
-                        </div>
-                        """.format(prediction, prediction/1_000_000), unsafe_allow_html=True)
+                        # Prepare input data - must match exact column names and order
+                        input_data = pd.DataFrame({
+                            'so_km': [so_km],
+                            'nam_dang_ky': [nam_dang_ky],
+                            'dung_tich_cc': [dung_tich_cc],
+                            'trong_luong_kg': [np.nan],
+                            'len_title': [len(dong_xe) if dong_xe else 0],
+                            'len_desc': [0],
+                            'thuong_hieu': [thuong_hieu],
+                            'dong_xe': [dong_xe if dong_xe else ""],
+                            'tinh_trang': [tinh_trang],
+                            'loai_xe': [loai_xe],
+                            'xuat_xu': [xuat_xu],
+                            'tinh_thanh': [tinh_thanh],
+                            'quan': [quan if quan else ""]
+                        }, columns=all_features)  # Ensure correct column order
                         
-                        # Additional info
-                        col_info1, col_info2, col_info3 = st.columns(3)
-                        with col_info1:
-                            st.metric("Thương hiệu", thuong_hieu)
-                        with col_info2:
-                            st.metric("Năm đăng ký", nam_dang_ky)
-                        with col_info3:
-                            st.metric("Số km", f"{so_km:,} km")
+                        # Check if model is a Pipeline (contains preprocessor)
+                        from sklearn.pipeline import Pipeline
+                        is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
+                        
+                        if is_pipeline:
+                            # Model already includes preprocessor, use raw input (13 features)
+                            prediction = model.predict(input_data)[0]
+                        else:
+                            # Model needs transformed input (278 features)
+                            X_transformed = preprocessor.transform(input_data)
+                            
+                            # Handle sparse matrix
+                            if hasattr(X_transformed, 'toarray'):
+                                X_transformed = X_transformed.toarray()
+                            
+                            prediction = model.predict(X_transformed)[0]
+                        
+                        # Validate prediction
+                        if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
+                            st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
+                        else:
+                            # Display result with beautiful UI
+                            st.markdown("---")
+                            st.markdown("""
+                            <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);'>
+                                <div style='font-size: 4rem; margin-bottom: 1rem;'>💰</div>
+                                <h3 style='color: #6b7280; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 600;'>Giá dự đoán</h3>
+                                <div class="price-display">{:,.0f} VNĐ</div>
+                                <p style='font-size: 1.75rem; color: #667eea; font-weight: 700; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.5); border-radius: 0.75rem; display: inline-block;'>
+                                    ≈ {:.2f} triệu VNĐ
+                                </p>
+                            </div>
+                            """.format(prediction, prediction/1_000_000), unsafe_allow_html=True)
+                            
+                            # Additional info
+                            col_info1, col_info2, col_info3 = st.columns(3)
+                            with col_info1:
+                                st.metric("Thương hiệu", thuong_hieu)
+                            with col_info2:
+                                st.metric("Năm đăng ký", nam_dang_ky)
+                            with col_info3:
+                                st.metric("Số km", f"{so_km:,} km")
                     
-                except Exception as e:
-                    st.error(f"Lỗi khi dự đoán: {str(e)}")
-                    import traceback
-                    with st.expander("Chi tiết lỗi"):
-                        st.code(traceback.format_exc())
+                    except Exception as e:
+                        st.error(f"Lỗi khi dự đoán: {str(e)}")
+                        import traceback
+                        with st.expander("Chi tiết lỗi"):
+                            st.code(traceback.format_exc())
 
 # Anomaly Detection page
 elif page == "🚨 Phát hiện bất thường":
@@ -1048,18 +1102,23 @@ elif page == "🚨 Phát hiện bất thường":
     if error:
         st.error(error)
         st.markdown("---")
+        st.warning("⚠️ **Lưu ý:** Form bên dưới vẫn có thể sử dụng để xem giao diện, nhưng sẽ không thể phát hiện bất thường cho đến khi models được load thành công.")
         st.info("""
         **💡 Hướng dẫn khắc phục:**
         1. Kiểm tra xem models đã được push lên GitHub chưa
         2. Đảm bảo files `project1/models/iso_model.joblib` và `project1/artifacts/preprocessor.joblib` có trên GitHub
         3. Nếu files quá lớn, cần dùng Git LFS
         4. Sau khi push, đợi vài phút để Streamlit Cloud sync lại
+        5. Reload app trên Streamlit Cloud (click "Relaunch to update")
         """)
-        st.stop()
-    else:
-        st.info("Nhập thông tin xe và giá để kiểm tra")
-        
-        with st.form("anomaly_detection_form"):
+        st.markdown("---")
+        # Don't stop - show form anyway
+        # st.stop()
+    
+    # Show form regardless of model status
+    st.info("Nhập thông tin xe và giá để kiểm tra")
+    
+    with st.form("anomaly_detection_form"):
             col1, col2 = st.columns(2)
             
             with col1:
@@ -1077,132 +1136,136 @@ elif page == "🚨 Phát hiện bất thường":
             submitted = st.form_submit_button("🔍 Kiểm tra", use_container_width=True)
             
             if submitted:
-                try:
-                    # Get feature names - MUST use exact order
-                    from project1.config import PREPROCESSOR_PATH
-                    import joblib
-                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-                    if isinstance(preprocessor_data, dict):
-                        numeric_features = preprocessor_data.get('numeric_features', [])
-                        categorical_features = preprocessor_data.get('categorical_features', [])
-                    else:
-                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
-                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
-                    
-                    # CRITICAL: Use exact feature order that preprocessor expects
-                    all_features = numeric_features + categorical_features
-                    
-                    # Prepare input with correct columns and order
-                    input_data = pd.DataFrame({
-                        'so_km': [so_km],
-                        'nam_dang_ky': [nam_dang_ky],
-                        'dung_tich_cc': [dung_tich_cc],
-                        'trong_luong_kg': [np.nan],
-                        'len_title': [len(dong_xe) if dong_xe else 0],
-                        'len_desc': [0],
-                        'thuong_hieu': [thuong_hieu],
-                        'dong_xe': [dong_xe if dong_xe else ""],
-                        'tinh_trang': [tinh_trang],
-                        'loai_xe': [loai_xe],
-                        'xuat_xu': ["Việt Nam"],
-                        'tinh_thanh': ["Hồ Chí Minh"],
-                        'quan': [""]
-                    }, columns=all_features)  # Ensure correct column order
-                    
-                    # Transform features
-                    X_transformed = preprocessor.transform(input_data)
-                    
-                    # CRITICAL: IsolationForest model was trained with log_price as additional feature
-                    # Model expects 279 features: 278 from preprocessor + 1 log_price
-                    # Add log_price feature (log of the price user entered)
-                    from scipy import sparse
-                    import scipy.sparse as sp
-                    
-                    # Calculate log_price (same as training: log1p of price)
-                    price_for_iso = max(0, gia_vnd)  # Ensure non-negative
-                    log_price = np.log1p(price_for_iso).reshape(-1, 1)
-                    
-                    # Concatenate transformed features with log_price
-                    if sparse.issparse(X_transformed):
-                        from scipy.sparse import hstack, csr_matrix
-                        X_transformed_aug = hstack([X_transformed, csr_matrix(log_price)])
-                    else:
-                        X_transformed_aug = np.hstack([X_transformed, log_price])
-                    
-                    # Convert to dense if needed for prediction
-                    if hasattr(X_transformed_aug, 'toarray'):
-                        X_transformed_aug = X_transformed_aug.toarray()
-                    
-                    # Predict anomaly with augmented features (279 features)
-                    anomaly_score = model.decision_function(X_transformed_aug)[0]
-                    predictions = model.predict(X_transformed_aug)
-                    is_anomaly = predictions[0] == -1
-                    
-                    # Validate scores
-                    if np.isnan(anomaly_score) or np.isinf(anomaly_score):
-                        st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
-                    else:
-                        # Display result with enhanced UI
-                        if is_anomaly:
-                            st.markdown("""
-                            <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2); border: 3px solid #ef4444;'>
-                                <div style='font-size: 4rem; margin-bottom: 1rem;'>⚠️</div>
-                                <h2 style='color: #dc2626; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Phát hiện giá BẤT THƯỜNG</h2>
-                                <p style='font-size: 1.3rem; color: #991b1b; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
-                                <p style='color: #7f1d1d; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại thông tin và so sánh với các xe tương tự.</p>
-                            </div>
-                            """.format(anomaly_score), unsafe_allow_html=True)
-                            
-                            # Show predicted price for comparison
-                            try:
-                                price_model, _, _ = load_price_model()
-                                if price_model is not None:
-                                    # Use X_transformed (278 features) for price prediction, not X_transformed_aug
-                                    if hasattr(X_transformed, 'toarray'):
-                                        X_for_price = X_transformed.toarray()
-                                    else:
-                                        X_for_price = X_transformed
-                                    
-                                    price_pred = price_model.predict(X_for_price)[0]
-                                    if price_pred > 0:
-                                        st.markdown("---")
-                                        col_comp1, col_comp2 = st.columns(2)
-                                        with col_comp1:
-                                            st.markdown("""
-                                            <div style='padding: 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 1rem; border-left: 4px solid #3b82f6;'>
-                                                <h3 style='color: #1e40af; margin-top: 0;'>💡 Giá dự đoán hợp lý</h3>
-                                                <p style='font-size: 1.5rem; font-weight: 700; color: #1e3a8a;'>{:.2f} triệu VNĐ</p>
-                                            </div>
-                                            """.format(price_pred/1_000_000), unsafe_allow_html=True)
-                                        with col_comp2:
-                                            st.markdown("""
-                                            <div style='padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 1rem; border-left: 4px solid #f59e0b;'>
-                                                <h3 style='color: #92400e; margin-top: 0;'>💰 Giá bạn nhập</h3>
-                                                <p style='font-size: 1.5rem; font-weight: 700; color: #78350f;'>{:.2f} triệu VNĐ</p>
-                                            </div>
-                                            """.format(gia_vnd/1_000_000), unsafe_allow_html=True)
-                                        
-                                        diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
-                                        if diff_pct > 30:
-                                            st.warning(f"⚠️ **Chênh lệch {diff_pct:.1f}%** so với giá dự đoán - đây là lý do phát hiện bất thường")
-                            except Exception as e:
-                                # Silently fail - not critical
-                                pass
+                # Check if model is available
+                if error or model is None or preprocessor is None:
+                    st.error("❌ Không thể phát hiện bất thường vì model chưa được load. Vui lòng xem hướng dẫn khắc phục ở trên.")
+                else:
+                    try:
+                        # Get feature names - MUST use exact order
+                        from project1.config import PREPROCESSOR_PATH
+                        import joblib
+                        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+                        if isinstance(preprocessor_data, dict):
+                            numeric_features = preprocessor_data.get('numeric_features', [])
+                            categorical_features = preprocessor_data.get('categorical_features', [])
                         else:
-                            st.markdown("""
-                            <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2); border: 3px solid #10b981;'>
-                                <div style='font-size: 4rem; margin-bottom: 1rem;'>✅</div>
-                                <h2 style='color: #059669; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Giá BÌNH THƯỜNG</h2>
-                                <p style='font-size: 1.3rem; color: #047857; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
-                                <p style='color: #065f46; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này phù hợp với thị trường. Bạn có thể yên tâm về mức giá này.</p>
-                            </div>
-                            """.format(anomaly_score), unsafe_allow_html=True)
+                            numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                            categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
                         
-                except Exception as e:
-                    st.error(f"Lỗi: {str(e)}")
-                    import traceback
-                    with st.expander("Chi tiết lỗi"):
-                        st.code(traceback.format_exc())
+                        # CRITICAL: Use exact feature order that preprocessor expects
+                        all_features = numeric_features + categorical_features
+                        
+                        # Prepare input with correct columns and order
+                        input_data = pd.DataFrame({
+                            'so_km': [so_km],
+                            'nam_dang_ky': [nam_dang_ky],
+                            'dung_tich_cc': [dung_tich_cc],
+                            'trong_luong_kg': [np.nan],
+                            'len_title': [len(dong_xe) if dong_xe else 0],
+                            'len_desc': [0],
+                            'thuong_hieu': [thuong_hieu],
+                            'dong_xe': [dong_xe if dong_xe else ""],
+                            'tinh_trang': [tinh_trang],
+                            'loai_xe': [loai_xe],
+                            'xuat_xu': ["Việt Nam"],
+                            'tinh_thanh': ["Hồ Chí Minh"],
+                            'quan': [""]
+                        }, columns=all_features)  # Ensure correct column order
+                        
+                        # Transform features
+                        X_transformed = preprocessor.transform(input_data)
+                        
+                        # CRITICAL: IsolationForest model was trained with log_price as additional feature
+                        # Model expects 279 features: 278 from preprocessor + 1 log_price
+                        # Add log_price feature (log of the price user entered)
+                        from scipy import sparse
+                        import scipy.sparse as sp
+                        
+                        # Calculate log_price (same as training: log1p of price)
+                        price_for_iso = max(0, gia_vnd)  # Ensure non-negative
+                        log_price = np.log1p(price_for_iso).reshape(-1, 1)
+                        
+                        # Concatenate transformed features with log_price
+                        if sparse.issparse(X_transformed):
+                            from scipy.sparse import hstack, csr_matrix
+                            X_transformed_aug = hstack([X_transformed, csr_matrix(log_price)])
+                        else:
+                            X_transformed_aug = np.hstack([X_transformed, log_price])
+                        
+                        # Convert to dense if needed for prediction
+                        if hasattr(X_transformed_aug, 'toarray'):
+                            X_transformed_aug = X_transformed_aug.toarray()
+                        
+                        # Predict anomaly with augmented features (279 features)
+                        anomaly_score = model.decision_function(X_transformed_aug)[0]
+                        predictions = model.predict(X_transformed_aug)
+                        is_anomaly = predictions[0] == -1
+                        
+                        # Validate scores
+                        if np.isnan(anomaly_score) or np.isinf(anomaly_score):
+                            st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
+                        else:
+                            # Display result with enhanced UI
+                            if is_anomaly:
+                                st.markdown("""
+                                <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2); border: 3px solid #ef4444;'>
+                                    <div style='font-size: 4rem; margin-bottom: 1rem;'>⚠️</div>
+                                    <h2 style='color: #dc2626; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Phát hiện giá BẤT THƯỜNG</h2>
+                                    <p style='font-size: 1.3rem; color: #991b1b; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
+                                    <p style='color: #7f1d1d; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại thông tin và so sánh với các xe tương tự.</p>
+                                </div>
+                                """.format(anomaly_score), unsafe_allow_html=True)
+                                
+                                # Show predicted price for comparison
+                                try:
+                                    price_model, _, _ = load_price_model()
+                                    if price_model is not None:
+                                        # Use X_transformed (278 features) for price prediction, not X_transformed_aug
+                                        if hasattr(X_transformed, 'toarray'):
+                                            X_for_price = X_transformed.toarray()
+                                        else:
+                                            X_for_price = X_transformed
+                                        
+                                        price_pred = price_model.predict(X_for_price)[0]
+                                        if price_pred > 0:
+                                            st.markdown("---")
+                                            col_comp1, col_comp2 = st.columns(2)
+                                            with col_comp1:
+                                                st.markdown("""
+                                                <div style='padding: 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 1rem; border-left: 4px solid #3b82f6;'>
+                                                    <h3 style='color: #1e40af; margin-top: 0;'>💡 Giá dự đoán hợp lý</h3>
+                                                    <p style='font-size: 1.5rem; font-weight: 700; color: #1e3a8a;'>{:.2f} triệu VNĐ</p>
+                                                </div>
+                                                """.format(price_pred/1_000_000), unsafe_allow_html=True)
+                                            with col_comp2:
+                                                st.markdown("""
+                                                <div style='padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 1rem; border-left: 4px solid #f59e0b;'>
+                                                    <h3 style='color: #92400e; margin-top: 0;'>💰 Giá bạn nhập</h3>
+                                                    <p style='font-size: 1.5rem; font-weight: 700; color: #78350f;'>{:.2f} triệu VNĐ</p>
+                                                </div>
+                                                """.format(gia_vnd/1_000_000), unsafe_allow_html=True)
+                                            
+                                            diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
+                                            if diff_pct > 30:
+                                                st.warning(f"⚠️ **Chênh lệch {diff_pct:.1f}%** so với giá dự đoán - đây là lý do phát hiện bất thường")
+                                except Exception as e:
+                                    # Silently fail - not critical
+                                    pass
+                            else:
+                                st.markdown("""
+                                <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2); border: 3px solid #10b981;'>
+                                    <div style='font-size: 4rem; margin-bottom: 1rem;'>✅</div>
+                                    <h2 style='color: #059669; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Giá BÌNH THƯỜNG</h2>
+                                    <p style='font-size: 1.3rem; color: #047857; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
+                                    <p style='color: #065f46; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này phù hợp với thị trường. Bạn có thể yên tâm về mức giá này.</p>
+                                </div>
+                                """.format(anomaly_score), unsafe_allow_html=True)
+                        
+                    except Exception as e:
+                        st.error(f"Lỗi: {str(e)}")
+                        import traceback
+                        with st.expander("Chi tiết lỗi"):
+                            st.code(traceback.format_exc())
 
 # Recommendation page
 elif page == "🔍 Gợi ý xe tương tự":
