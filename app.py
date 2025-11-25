@@ -803,52 +803,46 @@ st.markdown("""
         background: rgba(102, 126, 234, 0.3);
         color: #1f2937;
     }
+    
+    /* ULTIMATE FIX: Apply to ALL elements inside selectbox - highest priority */
+    .stSelectbox [data-baseweb="select"] *,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] *,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] *,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] *,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] *,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] *,
+    .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] * {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+        -webkit-background-clip: unset !important;
+        background: none !important;
+        background-image: none !important;
+        background-clip: unset !important;
+    }
 </style>
 <script>
-    // Force selected value in selectbox to be visible - AGGRESSIVE FIX
+    // ULTIMATE FIX: Force selected value in selectbox to be visible
     function fixSelectboxText() {
         // Find all selectboxes
         const selectboxes = document.querySelectorAll('[data-baseweb="select"]');
         selectboxes.forEach(select => {
-            // Find all potential text containers - be very aggressive
+            // Get ALL elements inside selectbox
             const allElements = select.querySelectorAll('*');
             allElements.forEach(el => {
-                // Force set color for any element that might contain text
-                if (el.textContent && el.textContent.trim() !== '') {
-                    el.style.setProperty('color', '#1f2937', 'important');
-                    el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
-                    el.style.setProperty('opacity', '1', 'important');
-                }
-                
-                // Also check computed style and fix if needed
-                const computedStyle = window.getComputedStyle(el);
-                const color = computedStyle.color;
-                const fillColor = computedStyle.webkitTextFillColor;
-                const opacity = computedStyle.opacity;
-                
-                // Check if text is invisible or transparent
-                if (color === 'rgba(0, 0, 0, 0)' || 
-                    color === 'transparent' ||
-                    fillColor === 'transparent' ||
-                    opacity === '0' ||
-                    (color === 'rgb(0, 0, 0)' && fillColor === 'transparent') ||
-                    fillColor === 'rgba(0, 0, 0, 0)') {
-                    el.style.setProperty('color', '#1f2937', 'important');
-                    el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
-                    el.style.setProperty('opacity', '1', 'important');
-                }
+                // Force set ALL style properties for visibility
+                el.style.setProperty('color', '#1f2937', 'important');
+                el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+                el.style.setProperty('opacity', '1', 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                el.style.setProperty('-webkit-background-clip', 'unset', 'important');
+                el.style.setProperty('background', 'none', 'important');
+                el.style.setProperty('background-image', 'none', 'important');
+                el.style.setProperty('background-clip', 'unset', 'important');
             });
             
-            // Also directly target the value input/display area
-            const valueArea = select.querySelector('[data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"]');
-            if (valueArea) {
-                const allInValueArea = valueArea.querySelectorAll('*');
-                allInValueArea.forEach(el => {
-                    el.style.setProperty('color', '#1f2937', 'important');
-                    el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
-                    el.style.setProperty('opacity', '1', 'important');
-                });
-            }
+            // Also set directly on the select element itself
+            select.style.setProperty('color', '#1f2937', 'important');
+            select.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
         });
     }
     
