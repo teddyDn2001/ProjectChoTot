@@ -840,8 +840,44 @@ st.markdown("""
         background-image: none !important;
         background-clip: unset !important;
     }
+    /* FINAL NUCLEAR OPTION: Inject style tag directly into selectbox elements */
+    .stSelectbox {
+        --selectbox-text-color: #1f2937 !important;
+    }
+    
+    .stSelectbox * {
+        --selectbox-text-color: #1f2937 !important;
+    }
 </style>
 <script>
+    // Inject a style tag directly into the page for maximum priority
+    (function() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .stSelectbox [data-baseweb="select"] * {
+                color: #1f2937 !important;
+                -webkit-text-fill-color: #1f2937 !important;
+                -webkit-background-clip: unset !important;
+                background: none !important;
+                background-image: none !important;
+                background-clip: unset !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            [data-baseweb="select"] * {
+                color: #1f2937 !important;
+                -webkit-text-fill-color: #1f2937 !important;
+                -webkit-background-clip: unset !important;
+                background: none !important;
+                background-image: none !important;
+                background-clip: unset !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+        `;
+        document.head.appendChild(style);
+    })();
+    
     // ULTIMATE FIX: Force selected value in selectbox to be visible
     function fixSelectboxText() {
         // Find all selectboxes
