@@ -1382,6 +1382,41 @@ elif page == "💰 Dự đoán giá":
     </div>
     """, unsafe_allow_html=True)
     
+    # Explanation box
+    with st.expander("ℹ️ **Giải thích chức năng: Dự đoán giá**", expanded=True):
+        st.markdown("""
+        <div style='padding: 1rem; background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #3b82f6;'>
+            <h3 style='color: #1e40af; margin-top: 0;'>🎯 Chức năng này làm gì?</h3>
+            <p style='color: #1e3a8a; line-height: 1.8; margin-bottom: 1rem;'>
+                <strong>Dự đoán giá xe máy</strong> sử dụng mô hình Machine Learning được huấn luyện trên <strong>7,208+ tin đăng</strong> từ Chợ Tốt 
+                để dự đoán giá bán hợp lý của một chiếc xe máy dựa trên các thông tin bạn cung cấp.
+            </p>
+            
+            <h4 style='color: #1e40af; margin-top: 1.5rem;'>📋 Các yếu tố được xem xét:</h4>
+            <ul style='color: #1e3a8a; line-height: 2;'>
+                <li><strong>🏷️ Thương hiệu & Dòng xe:</strong> Honda, Yamaha, SYM... và các dòng xe cụ thể (SH, Air Blade, Exciter...)</li>
+                <li><strong>📅 Năm đăng ký:</strong> Xe càng mới thì giá càng cao</li>
+                <li><strong>🛣️ Số km đã đi:</strong> Xe ít km hơn thường có giá cao hơn</li>
+                <li><strong>🔧 Tình trạng:</strong> Mới, Đã sử dụng, Cần sửa chữa</li>
+                <li><strong>🏍️ Loại xe & Dung tích:</strong> Tay ga, Số, Tay côn và dung tích động cơ (cc)</li>
+                <li><strong>🌍 Xuất xứ & Vị trí:</strong> Nơi sản xuất và địa điểm bán</li>
+            </ul>
+            
+            <h4 style='color: #1e40af; margin-top: 1.5rem;'>💡 Cách sử dụng:</h4>
+            <ol style='color: #1e3a8a; line-height: 2;'>
+                <li>Điền đầy đủ thông tin xe vào form bên dưới</li>
+                <li>Nhấn nút <strong>"🔮 Dự đoán giá"</strong></li>
+                <li>Hệ thống sẽ hiển thị giá dự đoán (VNĐ và triệu VNĐ)</li>
+                <li>So sánh với giá thị trường để đưa ra quyết định mua/bán hợp lý</li>
+            </ol>
+            
+            <div style='margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.7); border-radius: 0.5rem;'>
+                <p style='color: #1e3a8a; margin: 0;'><strong>⚠️ Lưu ý:</strong> Giá dự đoán chỉ mang tính chất tham khảo. 
+                Giá thực tế có thể khác do nhiều yếu tố như tình trạng thực tế, phụ kiện đi kèm, thời điểm mua bán...</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
     model, preprocessor, error = load_price_model()
     
     if error:
@@ -1518,6 +1553,52 @@ elif page == "🚨 Phát hiện bất thường":
         <p style='color: #6b7280; font-size: 1.1rem;'>Kiểm tra xem giá xe có bất thường so với thị trường không</p>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Explanation box
+    with st.expander("ℹ️ **Giải thích chức năng: Phát hiện bất thường**", expanded=True):
+        st.markdown("""
+        <div style='padding: 1rem; background: linear-gradient(135deg, rgba(255, 251, 235, 0.9) 0%, rgba(254, 243, 199, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #f59e0b;'>
+            <h3 style='color: #92400e; margin-top: 0;'>🎯 Chức năng này làm gì?</h3>
+            <p style='color: #78350f; line-height: 1.8; margin-bottom: 1rem;'>
+                <strong>Phát hiện giá bất thường</strong> sử dụng thuật toán <strong>Isolation Forest</strong> để phát hiện các tin đăng có giá 
+                không phù hợp với thị trường. Hệ thống sẽ so sánh giá bạn nhập với giá dự đoán và các mẫu trong dataset để đánh giá mức độ bất thường.
+            </p>
+            
+            <h4 style='color: #92400e; margin-top: 1.5rem;'>🔍 Cách hoạt động:</h4>
+            <ul style='color: #78350f; line-height: 2;'>
+                <li><strong>📊 Phân tích đa chiều:</strong> Xem xét tất cả các yếu tố: thương hiệu, năm, km, tình trạng, vị trí...</li>
+                <li><strong>🌲 Isolation Forest:</strong> Thuật toán phát hiện các điểm dữ liệu "cô lập" (outliers) trong không gian đa chiều</li>
+                <li><strong>💰 So sánh giá:</strong> So sánh giá bạn nhập với giá dự đoán hợp lý</li>
+                <li><strong>⚠️ Đánh giá:</strong> Đưa ra kết luận "Bình thường" hoặc "Bất thường" kèm theo điểm số (Anomaly Score)</li>
+            </ul>
+            
+            <h4 style='color: #92400e; margin-top: 1.5rem;'>💡 Cách sử dụng:</h4>
+            <ol style='color: #78350f; line-height: 2;'>
+                <li>Điền đầy đủ thông tin xe và <strong>giá bạn muốn kiểm tra</strong> vào form bên dưới</li>
+                <li>Nhấn nút <strong>"🔍 Kiểm tra"</strong></li>
+                <li>Hệ thống sẽ hiển thị kết quả:
+                    <ul style='margin-top: 0.5rem;'>
+                        <li><strong>✅ Bình thường:</strong> Giá phù hợp với thị trường</li>
+                        <li><strong>⚠️ Bất thường:</strong> Giá có vẻ không phù hợp (quá cao hoặc quá thấp)</li>
+                    </ul>
+                </li>
+                <li>Xem so sánh với giá dự đoán hợp lý để hiểu rõ hơn</li>
+            </ol>
+            
+            <h4 style='color: #92400e; margin-top: 1.5rem;'>📈 Ý nghĩa Anomaly Score:</h4>
+            <ul style='color: #78350f; line-height: 2;'>
+                <li><strong>Score < 0:</strong> Càng âm thì càng bất thường (giá quá cao hoặc quá thấp so với thị trường)</li>
+                <li><strong>Score > 0:</strong> Giá bình thường, phù hợp với thị trường</li>
+                <li><strong>Score càng cao:</strong> Càng chắc chắn giá là bình thường</li>
+            </ul>
+            
+            <div style='margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.7); border-radius: 0.5rem;'>
+                <p style='color: #78350f; margin: 0;'><strong>⚠️ Lưu ý:</strong> Kết quả chỉ mang tính chất tham khảo. 
+                Một giá "bất thường" không có nghĩa là không hợp lệ - có thể do xe có phụ kiện đặc biệt, tình trạng tốt hơn, 
+                hoặc các yếu tố khác không được mô hình xem xét.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     model, preprocessor, error = load_anomaly_model()
     
@@ -1699,6 +1780,58 @@ elif page == "🔍 Gợi ý xe tương tự":
         <p style='color: #6b7280; font-size: 1.1rem;'>Nhập ID hoặc thông tin xe để tìm các xe tương tự</p>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Explanation box
+    with st.expander("ℹ️ **Giải thích chức năng: Gợi ý xe tương tự**", expanded=True):
+        st.markdown("""
+        <div style='padding: 1rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.9) 0%, rgba(209, 250, 229, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #10b981;'>
+            <h3 style='color: #047857; margin-top: 0;'>🎯 Chức năng này làm gì?</h3>
+            <p style='color: #065f46; line-height: 1.8; margin-bottom: 1rem;'>
+                <strong>Gợi ý xe tương tự</strong> sử dụng thuật toán <strong>Content-Based Filtering</strong> và <strong>KNN (K-Nearest Neighbors)</strong> 
+                để tìm các xe máy có đặc điểm tương đồng với xe bạn đang quan tâm. Hệ thống phân tích dựa trên nhiều tiêu chí để đưa ra gợi ý phù hợp nhất.
+            </p>
+            
+            <h4 style='color: #047857; margin-top: 1.5rem;'>🔍 Các cách tìm kiếm:</h4>
+            <ul style='color: #065f46; line-height: 2;'>
+                <li><strong>🔢 Tìm theo ID:</strong> Nhập ID của xe để tìm các xe tương tự (phù hợp khi bạn đã biết một xe cụ thể)</li>
+                <li><strong>🏷️ Tìm theo Thương hiệu:</strong> Xem tất cả xe của một thương hiệu (Honda, Yamaha, SYM...)</li>
+                <li><strong>🏍️ Tìm theo Dòng xe:</strong> Tìm các xe cùng dòng (ví dụ: SH, Air Blade, Exciter...)</li>
+                <li><strong>🔧 Tìm kiếm nâng cao:</strong> Tìm theo nhiều tiêu chí: thương hiệu, khoảng giá, năm đăng ký...</li>
+            </ul>
+            
+            <h4 style='color: #047857; margin-top: 1.5rem;'>📊 Các yếu tố được so sánh:</h4>
+            <ul style='color: #065f46; line-height: 2;'>
+                <li><strong>🏷️ Thương hiệu & Dòng xe:</strong> Xe cùng thương hiệu/dòng sẽ được ưu tiên</li>
+                <li><strong>💰 Giá:</strong> Xe có giá tương đương sẽ được gợi ý</li>
+                <li><strong>📅 Năm đăng ký:</strong> Xe cùng thế hệ sẽ tương đồng hơn</li>
+                <li><strong>🛣️ Số km:</strong> Xe có số km tương đương</li>
+                <li><strong>🔧 Tình trạng & Loại xe:</strong> Xe cùng tình trạng và loại</li>
+                <li><strong>🌍 Vị trí:</strong> Xe ở cùng khu vực</li>
+            </ul>
+            
+            <h4 style='color: #047857; margin-top: 1.5rem;'>💡 Cách sử dụng:</h4>
+            <ol style='color: #065f46; line-height: 2;'>
+                <li>Chọn phương thức tìm kiếm phù hợp (ID, Thương hiệu, Dòng xe, hoặc Tùy chỉnh)</li>
+                <li>Nhập thông tin cần thiết vào form</li>
+                <li>Nhấn nút tìm kiếm</li>
+                <li>Xem danh sách các xe tương tự được sắp xếp theo độ tương đồng</li>
+                <li>So sánh giá và thông tin để đưa ra quyết định</li>
+            </ol>
+            
+            <h4 style='color: #047857; margin-top: 1.5rem;'>🎯 Khi nào nên dùng:</h4>
+            <ul style='color: #065f46; line-height: 2;'>
+                <li>Bạn đang quan tâm một xe cụ thể và muốn xem các lựa chọn tương tự</li>
+                <li>Bạn muốn so sánh giá của các xe cùng loại</li>
+                <li>Bạn muốn tìm xe trong một khoảng giá nhất định</li>
+                <li>Bạn muốn khám phá các lựa chọn thay thế</li>
+            </ul>
+            
+            <div style='margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.7); border-radius: 0.5rem;'>
+                <p style='color: #065f46; margin: 0;'><strong>💡 Mẹo:</strong> Sử dụng tìm kiếm nâng cao để thu hẹp kết quả theo nhu cầu cụ thể của bạn. 
+                Kết quả được sắp xếp từ tương đồng nhất đến ít tương đồng hơn.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     sample_data, error = load_sample_data()
     
