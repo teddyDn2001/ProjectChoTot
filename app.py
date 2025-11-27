@@ -1436,25 +1436,45 @@ elif page == "💰 Dự đoán giá":
         # st.stop()
     
     # Show form regardless of model status
+    st.markdown("### 📝 Điền thông tin xe")
+    st.markdown("💡 *Vui lòng điền đầy đủ thông tin để có kết quả dự đoán chính xác nhất*")
+    
     with st.form("price_prediction_form"):
             col1, col2 = st.columns(2)
             
             with col1:
-                thuong_hieu = st.selectbox("Thương hiệu", ["Honda", "Yamaha", "SYM", "Piaggio", "Vespa", "Khác"])
-                dong_xe = st.text_input("Dòng xe", placeholder="Ví dụ: SH, Air Blade, Exciter")
-                nam_dang_ky = st.number_input("Năm đăng ký", min_value=1990, max_value=2024, value=2020)
-                so_km = st.number_input("Số km đã đi", min_value=0, value=10000)
+                st.markdown("#### 🏷️ Thông tin cơ bản")
+                thuong_hieu = st.selectbox("Thương hiệu *", ["Honda", "Yamaha", "SYM", "Piaggio", "Vespa", "Khác"], 
+                                          help="Chọn thương hiệu xe máy")
+                dong_xe = st.text_input("Dòng xe *", placeholder="Ví dụ: SH, Air Blade, Exciter, Winner", 
+                                       help="Nhập tên dòng xe (ví dụ: SH, Air Blade, Exciter)")
+                nam_dang_ky = st.number_input("Năm đăng ký *", min_value=1990, max_value=2024, value=2020,
+                                             help="Năm đăng ký của xe (1990-2024)")
+                so_km = st.number_input("Số km đã đi *", min_value=0, value=10000, step=1000,
+                                       help="Số kilomet xe đã chạy (0 nếu xe mới)")
             
             with col2:
-                tinh_trang = st.selectbox("Tình trạng", ["Mới", "Đã sử dụng", "Cần sửa chữa"])
-                loai_xe = st.selectbox("Loại xe", ["Tay ga", "Số", "Tay côn", "Khác"])
-                xuat_xu = st.selectbox("Xuất xứ", ["Việt Nam", "Thái Lan", "Indonesia", "Nhật Bản", "Khác"])
-                dung_tich_cc = st.number_input("Dung tích (cc)", min_value=50, max_value=1000, value=125)
+                st.markdown("#### 🔧 Thông tin kỹ thuật")
+                tinh_trang = st.selectbox("Tình trạng *", ["Mới", "Đã sử dụng", "Cần sửa chữa"],
+                                         help="Tình trạng hiện tại của xe")
+                loai_xe = st.selectbox("Loại xe *", ["Tay ga", "Số", "Tay côn", "Khác"],
+                                      help="Loại hộp số của xe")
+                xuat_xu = st.selectbox("Xuất xứ *", ["Việt Nam", "Thái Lan", "Indonesia", "Nhật Bản", "Khác"],
+                                      help="Nơi sản xuất xe")
+                dung_tich_cc = st.number_input("Dung tích (cc) *", min_value=50, max_value=1000, value=125, step=25,
+                                              help="Dung tích xi-lanh (50-1000cc)")
             
-            tinh_thanh = st.selectbox("Tỉnh/Thành", ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khác"])
-            quan = st.text_input("Quận/Huyện", placeholder="Ví dụ: Quận 1, Quận 7")
+            st.markdown("#### 📍 Thông tin địa điểm")
+            col_loc1, col_loc2 = st.columns(2)
+            with col_loc1:
+                tinh_thanh = st.selectbox("Tỉnh/Thành *", ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khác"],
+                                         help="Tỉnh/thành phố nơi bán xe")
+            with col_loc2:
+                quan = st.text_input("Quận/Huyện", placeholder="Ví dụ: Quận 1, Quận 7, Quận Bình Thạnh",
+                                    help="Quận/huyện (có thể để trống)")
             
-            submitted = st.form_submit_button("🔮 Dự đoán giá", use_container_width=True)
+            st.markdown("---")
+            submitted = st.form_submit_button("🔮 Dự đoán giá", use_container_width=True, type="primary")
             
             if submitted:
                 # Check if model is available
@@ -1619,24 +1639,39 @@ elif page == "🚨 Phát hiện bất thường":
         # st.stop()
     
     # Show form regardless of model status
-    st.info("Nhập thông tin xe và giá để kiểm tra")
+    st.markdown("### 📝 Điền thông tin xe và giá cần kiểm tra")
+    st.markdown("💡 *Nhập thông tin xe và giá bạn muốn kiểm tra để xem có bất thường không*")
     
     with st.form("anomaly_detection_form"):
             col1, col2 = st.columns(2)
             
             with col1:
-                thuong_hieu = st.selectbox("Thương hiệu", ["Honda", "Yamaha", "SYM", "Piaggio", "Vespa"])
-                dong_xe = st.text_input("Dòng xe")
-                nam_dang_ky = st.number_input("Năm đăng ký", min_value=1990, max_value=2024)
-                so_km = st.number_input("Số km", min_value=0)
+                st.markdown("#### 🏷️ Thông tin xe")
+                thuong_hieu = st.selectbox("Thương hiệu *", ["Honda", "Yamaha", "SYM", "Piaggio", "Vespa"],
+                                          help="Chọn thương hiệu xe")
+                dong_xe = st.text_input("Dòng xe *", placeholder="Ví dụ: SH, Air Blade, Exciter",
+                                       help="Nhập tên dòng xe")
+                nam_dang_ky = st.number_input("Năm đăng ký *", min_value=1990, max_value=2024, value=2020,
+                                             help="Năm đăng ký của xe")
+                so_km = st.number_input("Số km đã đi *", min_value=0, value=10000, step=1000,
+                                       help="Số kilomet xe đã chạy")
             
             with col2:
-                tinh_trang = st.selectbox("Tình trạng", ["Mới", "Đã sử dụng", "Cần sửa chữa"])
-                loai_xe = st.selectbox("Loại xe", ["Tay ga", "Số", "Tay côn"])
-                dung_tich_cc = st.number_input("Dung tích (cc)", min_value=50, max_value=1000)
-                gia_vnd = st.number_input("Giá (VNĐ)", min_value=0, format="%d")
+                st.markdown("#### 🔧 Thông tin kỹ thuật & Giá")
+                tinh_trang = st.selectbox("Tình trạng *", ["Mới", "Đã sử dụng", "Cần sửa chữa"],
+                                         help="Tình trạng hiện tại của xe")
+                loai_xe = st.selectbox("Loại xe *", ["Tay ga", "Số", "Tay côn"],
+                                      help="Loại hộp số của xe")
+                dung_tich_cc = st.number_input("Dung tích (cc) *", min_value=50, max_value=1000, value=125, step=25,
+                                              help="Dung tích xi-lanh")
+                st.markdown("---")
+                st.markdown("#### 💰 Giá cần kiểm tra")
+                gia_vnd = st.number_input("Giá (VNĐ) *", min_value=0, value=50000000, step=1000000, format="%d",
+                                        help="Nhập giá bạn muốn kiểm tra (ví dụ: 50,000,000 VNĐ)")
+                st.caption(f"💡 Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ")
             
-            submitted = st.form_submit_button("🔍 Kiểm tra", use_container_width=True)
+            st.markdown("---")
+            submitted = st.form_submit_button("🔍 Kiểm tra giá bất thường", use_container_width=True, type="primary")
             
             if submitted:
                 # Check if model is available
@@ -1853,8 +1888,10 @@ elif page == "🔍 Gợi ý xe tương tự":
         from utils import get_bike_info, find_similar_bikes, format_price, parse_price
         
         # Simple recommendation interface
-        st.subheader("🔎 Tìm kiếm")
-        search_option = st.radio("Tìm theo:", ["ID", "Thương hiệu", "Dòng xe", "Thông tin tùy chỉnh"], horizontal=True)
+        st.markdown("### 🔎 Chọn phương thức tìm kiếm")
+        st.markdown("💡 *Chọn cách tìm kiếm phù hợp với nhu cầu của bạn*")
+        search_option = st.radio("Tìm theo:", ["ID", "Thương hiệu", "Dòng xe", "Thông tin tùy chỉnh"], 
+                                horizontal=True, help="Chọn cách bạn muốn tìm xe tương tự")
         
         if search_option == "ID":
             col1, col2 = st.columns([3, 1])
