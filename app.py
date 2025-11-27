@@ -854,7 +854,11 @@ st.markdown("""
     (function() {
         const style = document.createElement('style');
         style.textContent = `
-            .stSelectbox [data-baseweb="select"] * {
+            /* Fix for ALL selectbox elements */
+            .stSelectbox [data-baseweb="select"],
+            .stSelectbox [data-baseweb="select"] *,
+            [data-baseweb="select"],
+            [data-baseweb="select"] * {
                 color: #1f2937 !important;
                 -webkit-text-fill-color: #1f2937 !important;
                 -webkit-background-clip: unset !important;
@@ -864,7 +868,13 @@ st.markdown("""
                 opacity: 1 !important;
                 visibility: visible !important;
             }
-            [data-baseweb="select"] * {
+            /* Specifically target div and span elements that might contain text */
+            .stSelectbox [data-baseweb="select"] div,
+            .stSelectbox [data-baseweb="select"] span,
+            .stSelectbox [data-baseweb="select"] p,
+            [data-baseweb="select"] div,
+            [data-baseweb="select"] span,
+            [data-baseweb="select"] p {
                 color: #1f2937 !important;
                 -webkit-text-fill-color: #1f2937 !important;
                 -webkit-background-clip: unset !important;
@@ -880,9 +890,15 @@ st.markdown("""
     
     // ULTIMATE FIX: Force selected value in selectbox to be visible
     function fixSelectboxText() {
-        // Find all selectboxes
-        const selectboxes = document.querySelectorAll('[data-baseweb="select"]');
-        selectboxes.forEach(select => {
+        // Find all selectboxes - use multiple selectors
+        const selectboxes1 = document.querySelectorAll('[data-baseweb="select"]');
+        const selectboxes2 = document.querySelectorAll('.stSelectbox [data-baseweb="select"]');
+        const allSelectboxes = [...selectboxes1, ...selectboxes2];
+        
+        // Remove duplicates
+        const uniqueSelectboxes = Array.from(new Set(allSelectboxes));
+        
+        uniqueSelectboxes.forEach(select => {
             // Get ALL elements inside selectbox including the select itself
             const allElements = select.querySelectorAll('*');
             
@@ -890,6 +906,9 @@ st.markdown("""
             const allToFix = [select, ...Array.from(allElements)];
             
             allToFix.forEach(el => {
+                // Skip script and style tags
+                if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+                
                 // Force set ALL style properties for visibility
                 el.style.setProperty('color', '#1f2937', 'important');
                 el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
@@ -900,20 +919,35 @@ st.markdown("""
                 el.style.setProperty('background-image', 'none', 'important');
                 el.style.setProperty('background-clip', 'unset', 'important');
                 
-                // Also remove any inline styles that might conflict
-                const computedStyle = window.getComputedStyle(el);
-                if (computedStyle.webkitTextFillColor === 'transparent' || 
-                    computedStyle.webkitTextFillColor === 'rgba(0, 0, 0, 0)') {
-                    el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+                // Check computed style and force fix if needed
+                try {
+                    const computedStyle = window.getComputedStyle(el);
+                    const fillColor = computedStyle.webkitTextFillColor;
+                    const color = computedStyle.color;
+                    
+                    // If text is transparent or invisible, force fix
+                    if (fillColor === 'transparent' || 
+                        fillColor === 'rgba(0, 0, 0, 0)' ||
+                        color === 'rgba(0, 0, 0, 0)' ||
+                        color === 'transparent') {
+                        el.style.setProperty('color', '#1f2937', 'important');
+                        el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+                    }
+                } catch(e) {
+                    // Ignore errors
                 }
             });
         });
         
-        // Also find all elements with data-baseweb="select" and fix them
-        const allSelectElements = document.querySelectorAll('[data-baseweb="select"]');
-        allSelectElements.forEach(el => {
-            el.style.setProperty('color', '#1f2937', 'important');
-            el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+        // Also find all stSelectbox containers and fix their children
+        const stSelectboxes = document.querySelectorAll('.stSelectbox');
+        stSelectboxes.forEach(container => {
+            const allChildren = container.querySelectorAll('*');
+            allChildren.forEach(el => {
+                if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+                el.style.setProperty('color', '#1f2937', 'important');
+                el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+            });
         });
     }
     
