@@ -805,6 +805,7 @@ st.markdown("""
     }
     
     /* ULTIMATE FIX: Apply to ALL elements inside selectbox - highest priority */
+    /* This must come AFTER all other CSS rules to override them */
     .stSelectbox [data-baseweb="select"] *,
     .stSelectbox [data-baseweb="select"] [data-baseweb="select"] *,
     .stSelectbox [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] *,
@@ -819,6 +820,26 @@ st.markdown("""
         background-image: none !important;
         background-clip: unset !important;
     }
+    
+    /* EXTRA FIX: Target the actual input/display element more specifically */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+        -webkit-background-clip: unset !important;
+        background: none !important;
+        background-image: none !important;
+        background-clip: unset !important;
+    }
+    
+    /* Also target any element that might be the displayed value */
+    [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] [data-baseweb="select"] * {
+        color: #1f2937 !important;
+        -webkit-text-fill-color: #1f2937 !important;
+        -webkit-background-clip: unset !important;
+        background: none !important;
+        background-image: none !important;
+        background-clip: unset !important;
+    }
 </style>
 <script>
     // ULTIMATE FIX: Force selected value in selectbox to be visible
@@ -826,9 +847,13 @@ st.markdown("""
         // Find all selectboxes
         const selectboxes = document.querySelectorAll('[data-baseweb="select"]');
         selectboxes.forEach(select => {
-            // Get ALL elements inside selectbox
+            // Get ALL elements inside selectbox including the select itself
             const allElements = select.querySelectorAll('*');
-            allElements.forEach(el => {
+            
+            // Also include the select element itself
+            const allToFix = [select, ...Array.from(allElements)];
+            
+            allToFix.forEach(el => {
                 // Force set ALL style properties for visibility
                 el.style.setProperty('color', '#1f2937', 'important');
                 el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
@@ -838,11 +863,21 @@ st.markdown("""
                 el.style.setProperty('background', 'none', 'important');
                 el.style.setProperty('background-image', 'none', 'important');
                 el.style.setProperty('background-clip', 'unset', 'important');
+                
+                // Also remove any inline styles that might conflict
+                const computedStyle = window.getComputedStyle(el);
+                if (computedStyle.webkitTextFillColor === 'transparent' || 
+                    computedStyle.webkitTextFillColor === 'rgba(0, 0, 0, 0)') {
+                    el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+                }
             });
-            
-            // Also set directly on the select element itself
-            select.style.setProperty('color', '#1f2937', 'important');
-            select.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
+        });
+        
+        // Also find all elements with data-baseweb="select" and fix them
+        const allSelectElements = document.querySelectorAll('[data-baseweb="select"]');
+        allSelectElements.forEach(el => {
+            el.style.setProperty('color', '#1f2937', 'important');
+            el.style.setProperty('-webkit-text-fill-color', '#1f2937', 'important');
         });
     }
     
@@ -889,8 +924,15 @@ st.markdown("""
         }
     }, true);
     
-    // Also run periodically to catch any missed updates
-    setInterval(fixSelectboxText, 2000);
+    // Also run periodically to catch any missed updates - more frequent
+    setInterval(fixSelectboxText, 500);
+    
+    // Also run when window loads completely
+    window.addEventListener('load', function() {
+        setTimeout(fixSelectboxText, 100);
+        setTimeout(fixSelectboxText, 500);
+        setTimeout(fixSelectboxText, 1000);
+    });
 </script>
 """, unsafe_allow_html=True)
 
