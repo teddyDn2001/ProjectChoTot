@@ -994,15 +994,38 @@ st.markdown("""
         }
     }, true);
     
-    // Also run periodically to catch any missed updates - more frequent
-    setInterval(fixSelectboxText, 500);
+    // Also run periodically to catch any missed updates - very frequent
+    setInterval(fixSelectboxText, 200);
     
     // Also run when window loads completely
     window.addEventListener('load', function() {
+        setTimeout(fixSelectboxText, 50);
         setTimeout(fixSelectboxText, 100);
+        setTimeout(fixSelectboxText, 300);
         setTimeout(fixSelectboxText, 500);
         setTimeout(fixSelectboxText, 1000);
+        setTimeout(fixSelectboxText, 2000);
     });
+    
+    // Listen for Streamlit's custom events
+    if (window.parent) {
+        window.parent.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'streamlit:render') {
+                setTimeout(fixSelectboxText, 100);
+                setTimeout(fixSelectboxText, 300);
+            }
+        });
+    }
+    
+    // Use requestAnimationFrame for continuous checking
+    function continuousFix() {
+        fixSelectboxText();
+        requestAnimationFrame(continuousFix);
+    }
+    // Start continuous fix after initial delay
+    setTimeout(function() {
+        requestAnimationFrame(continuousFix);
+    }, 1000);
 </script>
 """, unsafe_allow_html=True)
 
