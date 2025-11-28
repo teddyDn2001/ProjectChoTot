@@ -1698,7 +1698,7 @@ elif page == "💰 Dự đoán giá":
                 else:
                     # Show loading state
                     with st.spinner("🔄 Đang xử lý dự đoán giá... Vui lòng đợi trong giây lát"):
-                try:
+                        try:
                     # Get feature names from preprocessor - MUST use exact order
                     from project1.config import PREPROCESSOR_PATH
                     import joblib
