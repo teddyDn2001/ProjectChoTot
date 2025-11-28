@@ -1288,11 +1288,11 @@ def load_sample_data():
         for path in possible_paths:
             if path.exists():
                 try:
-                # Load FULL dataset, not just sample
-                df = pd.read_csv(path, low_memory=False)
+                    # Load FULL dataset, not just sample
+                    df = pd.read_csv(path, low_memory=False)
                     if len(df) == 0:
                         return None, f"❌ File dữ liệu rỗng: {path}"
-                return df, None
+                    return df, None
                 except Exception as e:
                     return None, f"❌ Lỗi khi đọc file {path}: {str(e)}"
         
