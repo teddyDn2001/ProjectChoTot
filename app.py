@@ -1196,7 +1196,7 @@ def load_price_model():
         
         # Load model - check if it's a dict or direct model
         try:
-        model_data = joblib.load(PRICE_MODEL_PATH)
+            model_data = joblib.load(PRICE_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
