@@ -1092,7 +1092,7 @@ def load_price_model():
         
         # Load model - check if it's a dict or direct model
         try:
-            model_data = joblib.load(PRICE_MODEL_PATH)
+        model_data = joblib.load(PRICE_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1107,7 +1107,7 @@ def load_price_model():
         
         # Load preprocessor
         try:
-            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1139,7 +1139,7 @@ def load_anomaly_model():
             return None, None, f"❌ Không tìm thấy file preprocessor: {PREPROCESSOR_PATH}\n\n💡 Có thể preprocessor chưa được upload lên GitHub. Vui lòng kiểm tra lại."
         
         try:
-            iso_data = joblib.load(ISO_MODEL_PATH)
+        iso_data = joblib.load(ISO_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1150,7 +1150,7 @@ def load_anomaly_model():
             iso_model = iso_data
         
         try:
-            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1184,11 +1184,11 @@ def load_sample_data():
         for path in possible_paths:
             if path.exists():
                 try:
-                    # Load FULL dataset, not just sample
-                    df = pd.read_csv(path, low_memory=False)
+                # Load FULL dataset, not just sample
+                df = pd.read_csv(path, low_memory=False)
                     if len(df) == 0:
                         return None, f"❌ File dữ liệu rỗng: {path}"
-                    return df, None
+                return df, None
                 except Exception as e:
                     return None, f"❌ Lỗi khi đọc file {path}: {str(e)}"
         
@@ -1237,7 +1237,7 @@ if page == "🏠 Trang chủ":
         <div class="feature-card">
             <h2 style='color: #f59e0b; margin-top: 0;'>🚨 Phát hiện bất thường</h2>
             <p style='color: #4b5563; line-height: 1.8;'>
-                Phát hiện các tin đăng có giá bất thường:
+        Phát hiện các tin đăng có giá bất thường:
             </p>
             <ul style='color: #6b7280; line-height: 2;'>
                 <li>🔍 Residual-based detection</li>
@@ -1439,7 +1439,7 @@ elif page == "💰 Dự đoán giá":
     st.markdown("### 📝 Điền thông tin xe")
     st.markdown("💡 *Vui lòng điền đầy đủ thông tin để có kết quả dự đoán chính xác nhất*")
     
-    with st.form("price_prediction_form"):
+        with st.form("price_prediction_form"):
             col1, col2 = st.columns(2)
             
             with col1:
@@ -1481,62 +1481,65 @@ elif page == "💰 Dự đoán giá":
                 if error or model is None or preprocessor is None:
                     st.error("❌ Không thể dự đoán vì model chưa được load. Vui lòng xem hướng dẫn khắc phục ở trên.")
                 else:
-                    try:
-                        # Get feature names from preprocessor - MUST use exact order
-                        from project1.config import PREPROCESSOR_PATH
-                        import joblib
-                        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-                        if isinstance(preprocessor_data, dict):
-                            numeric_features = preprocessor_data.get('numeric_features', [])
-                            categorical_features = preprocessor_data.get('categorical_features', [])
-                        else:
-                            # Fallback: use default feature names
-                            numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
-                            categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
+                try:
+                    # Get feature names from preprocessor - MUST use exact order
+                    from project1.config import PREPROCESSOR_PATH
+                    import joblib
+                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+                    if isinstance(preprocessor_data, dict):
+                        numeric_features = preprocessor_data.get('numeric_features', [])
+                        categorical_features = preprocessor_data.get('categorical_features', [])
+                    else:
+                        # Fallback: use default feature names
+                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
+                    
+                    # CRITICAL: Use exact feature order that preprocessor expects
+                    all_features = numeric_features + categorical_features
+                    
+                    # Prepare input data - must match exact column names and order
+                    input_data = pd.DataFrame({
+                        'so_km': [so_km],
+                        'nam_dang_ky': [nam_dang_ky],
+                        'dung_tich_cc': [dung_tich_cc],
+                        'trong_luong_kg': [np.nan],
+                        'len_title': [len(dong_xe) if dong_xe else 0],
+                        'len_desc': [0],
+                        'thuong_hieu': [thuong_hieu],
+                        'dong_xe': [dong_xe if dong_xe else ""],
+                        'tinh_trang': [tinh_trang],
+                        'loai_xe': [loai_xe],
+                        'xuat_xu': [xuat_xu],
+                        'tinh_thanh': [tinh_thanh],
+                        'quan': [quan if quan else ""]
+                    }, columns=all_features)  # Ensure correct column order
+                    
+                    # Check if model is a Pipeline (contains preprocessor)
+                    from sklearn.pipeline import Pipeline
+                    is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
+                    
+                    if is_pipeline:
+                        # Model already includes preprocessor, use raw input (13 features)
+                        prediction = model.predict(input_data)[0]
+                    else:
+                        # Model needs transformed input (278 features)
+                        X_transformed = preprocessor.transform(input_data)
                         
-                        # CRITICAL: Use exact feature order that preprocessor expects
-                        all_features = numeric_features + categorical_features
+                        # Handle sparse matrix
+                        if hasattr(X_transformed, 'toarray'):
+                            X_transformed = X_transformed.toarray()
                         
-                        # Prepare input data - must match exact column names and order
-                        input_data = pd.DataFrame({
-                            'so_km': [so_km],
-                            'nam_dang_ky': [nam_dang_ky],
-                            'dung_tich_cc': [dung_tich_cc],
-                            'trong_luong_kg': [np.nan],
-                            'len_title': [len(dong_xe) if dong_xe else 0],
-                            'len_desc': [0],
-                            'thuong_hieu': [thuong_hieu],
-                            'dong_xe': [dong_xe if dong_xe else ""],
-                            'tinh_trang': [tinh_trang],
-                            'loai_xe': [loai_xe],
-                            'xuat_xu': [xuat_xu],
-                            'tinh_thanh': [tinh_thanh],
-                            'quan': [quan if quan else ""]
-                        }, columns=all_features)  # Ensure correct column order
-                        
-                        # Check if model is a Pipeline (contains preprocessor)
-                        from sklearn.pipeline import Pipeline
-                        is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
-                        
-                        if is_pipeline:
-                            # Model already includes preprocessor, use raw input (13 features)
-                            prediction = model.predict(input_data)[0]
-                        else:
-                            # Model needs transformed input (278 features)
-                            X_transformed = preprocessor.transform(input_data)
-                            
-                            # Handle sparse matrix
-                            if hasattr(X_transformed, 'toarray'):
-                                X_transformed = X_transformed.toarray()
-                            
-                            prediction = model.predict(X_transformed)[0]
-                        
-                        # Validate prediction
-                        if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
-                            st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
-                        else:
+                        prediction = model.predict(X_transformed)[0]
+                    
+                    # Validate prediction
+                    if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
+                        st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
+                    else:
                             # Display result with beautiful UI
                             st.markdown("---")
+                            st.markdown("### 🎯 Kết quả dự đoán")
+                            
+                            # Main result card
                             st.markdown("""
                             <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);'>
                                 <div style='font-size: 4rem; margin-bottom: 1rem;'>💰</div>
@@ -1548,20 +1551,65 @@ elif page == "💰 Dự đoán giá":
                             </div>
                             """.format(prediction, prediction/1_000_000), unsafe_allow_html=True)
                             
-                            # Additional info
-                            col_info1, col_info2, col_info3 = st.columns(3)
+                            # Additional info cards
+                            st.markdown("#### 📊 Thông tin xe đã nhập")
+                            col_info1, col_info2, col_info3, col_info4 = st.columns(4)
                             with col_info1:
-                                st.metric("Thương hiệu", thuong_hieu)
+                                st.markdown(f"""
+                                <div style='padding: 1rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #3b82f6;'>
+                                    <p style='color: #1e40af; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Thương hiệu</p>
+                                    <p style='color: #1e3a8a; font-weight: 700; margin: 0; font-size: 1.1rem;'>{thuong_hieu}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
                             with col_info2:
-                                st.metric("Năm đăng ký", nam_dang_ky)
+                                st.markdown(f"""
+                                <div style='padding: 1rem; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #10b981;'>
+                                    <p style='color: #166534; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Năm đăng ký</p>
+                                    <p style='color: #14532d; font-weight: 700; margin: 0; font-size: 1.1rem;'>{nam_dang_ky}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
                             with col_info3:
-                                st.metric("Số km", f"{so_km:,} km")
+                                st.markdown(f"""
+                                <div style='padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #f59e0b;'>
+                                    <p style='color: #92400e; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Số km</p>
+                                    <p style='color: #78350f; font-weight: 700; margin: 0; font-size: 1.1rem;'>{so_km:,} km</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            with col_info4:
+                                st.markdown(f"""
+                                <div style='padding: 1rem; background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #ec4899;'>
+                                    <p style='color: #9f1239; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Tình trạng</p>
+                                    <p style='color: #831843; font-weight: 700; margin: 0; font-size: 1.1rem;'>{tinh_trang}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Tips and recommendations
+                            st.markdown("---")
+                            with st.expander("💡 **Tips & Gợi ý sau khi xem kết quả**", expanded=False):
+                                st.markdown("""
+                                <div style='padding: 1rem; background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #3b82f6;'>
+                                    <h4 style='color: #1e40af; margin-top: 0;'>📌 Những điều cần lưu ý:</h4>
+                                    <ul style='color: #1e3a8a; line-height: 2;'>
+                                        <li><strong>Giá dự đoán chỉ mang tính tham khảo:</strong> Giá thực tế có thể khác do nhiều yếu tố như phụ kiện, tình trạng thực tế, thời điểm mua bán...</li>
+                                        <li><strong>So sánh với thị trường:</strong> Nên xem thêm các tin đăng tương tự để có cái nhìn tổng quan hơn</li>
+                                        <li><strong>Kiểm tra giá bất thường:</strong> Sử dụng chức năng "Phát hiện bất thường" để kiểm tra xem giá có phù hợp không</li>
+                                        <li><strong>Tìm xe tương tự:</strong> Sử dụng chức năng "Gợi ý xe tương tự" để so sánh giá với các xe khác</li>
+                                    </ul>
+                                    <h4 style='color: #1e40af; margin-top: 1.5rem;'>🎯 Các bước tiếp theo:</h4>
+                                    <ol style='color: #1e3a8a; line-height: 2;'>
+                                        <li>Ghi nhận giá dự đoán này làm mức tham khảo</li>
+                                        <li>Tìm các xe tương tự để so sánh giá</li>
+                                        <li>Kiểm tra giá có bất thường không (nếu bạn đã biết giá cụ thể)</li>
+                                        <li>Đàm phán dựa trên thông tin đã có</li>
+                                    </ol>
+                                </div>
+                                """, unsafe_allow_html=True)
                     
-                    except Exception as e:
-                        st.error(f"Lỗi khi dự đoán: {str(e)}")
-                        import traceback
-                        with st.expander("Chi tiết lỗi"):
-                            st.code(traceback.format_exc())
+                except Exception as e:
+                    st.error(f"Lỗi khi dự đoán: {str(e)}")
+                    import traceback
+                    with st.expander("Chi tiết lỗi"):
+                        st.code(traceback.format_exc())
 
 # Anomaly Detection page
 elif page == "🚨 Phát hiện bất thường":
@@ -1641,8 +1689,8 @@ elif page == "🚨 Phát hiện bất thường":
     # Show form regardless of model status
     st.markdown("### 📝 Điền thông tin xe và giá cần kiểm tra")
     st.markdown("💡 *Nhập thông tin xe và giá bạn muốn kiểm tra để xem có bất thường không*")
-    
-    with st.form("anomaly_detection_form"):
+        
+        with st.form("anomaly_detection_form"):
             col1, col2 = st.columns(2)
             
             with col1:
@@ -1678,41 +1726,41 @@ elif page == "🚨 Phát hiện bất thường":
                 if error or model is None or preprocessor is None:
                     st.error("❌ Không thể phát hiện bất thường vì model chưa được load. Vui lòng xem hướng dẫn khắc phục ở trên.")
                 else:
-                    try:
-                        # Get feature names - MUST use exact order
-                        from project1.config import PREPROCESSOR_PATH
-                        import joblib
-                        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-                        if isinstance(preprocessor_data, dict):
-                            numeric_features = preprocessor_data.get('numeric_features', [])
-                            categorical_features = preprocessor_data.get('categorical_features', [])
-                        else:
-                            numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
-                            categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
-                        
-                        # CRITICAL: Use exact feature order that preprocessor expects
-                        all_features = numeric_features + categorical_features
-                        
-                        # Prepare input with correct columns and order
-                        input_data = pd.DataFrame({
-                            'so_km': [so_km],
-                            'nam_dang_ky': [nam_dang_ky],
-                            'dung_tich_cc': [dung_tich_cc],
-                            'trong_luong_kg': [np.nan],
-                            'len_title': [len(dong_xe) if dong_xe else 0],
-                            'len_desc': [0],
-                            'thuong_hieu': [thuong_hieu],
-                            'dong_xe': [dong_xe if dong_xe else ""],
-                            'tinh_trang': [tinh_trang],
-                            'loai_xe': [loai_xe],
-                            'xuat_xu': ["Việt Nam"],
-                            'tinh_thanh': ["Hồ Chí Minh"],
-                            'quan': [""]
-                        }, columns=all_features)  # Ensure correct column order
-                        
+                try:
+                    # Get feature names - MUST use exact order
+                    from project1.config import PREPROCESSOR_PATH
+                    import joblib
+                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+                    if isinstance(preprocessor_data, dict):
+                        numeric_features = preprocessor_data.get('numeric_features', [])
+                        categorical_features = preprocessor_data.get('categorical_features', [])
+                    else:
+                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
+                    
+                    # CRITICAL: Use exact feature order that preprocessor expects
+                    all_features = numeric_features + categorical_features
+                    
+                    # Prepare input with correct columns and order
+                    input_data = pd.DataFrame({
+                        'so_km': [so_km],
+                        'nam_dang_ky': [nam_dang_ky],
+                        'dung_tich_cc': [dung_tich_cc],
+                        'trong_luong_kg': [np.nan],
+                        'len_title': [len(dong_xe) if dong_xe else 0],
+                        'len_desc': [0],
+                        'thuong_hieu': [thuong_hieu],
+                        'dong_xe': [dong_xe if dong_xe else ""],
+                        'tinh_trang': [tinh_trang],
+                        'loai_xe': [loai_xe],
+                        'xuat_xu': ["Việt Nam"],
+                        'tinh_thanh': ["Hồ Chí Minh"],
+                        'quan': [""]
+                    }, columns=all_features)  # Ensure correct column order
+                    
                         # Transform features
-                        X_transformed = preprocessor.transform(input_data)
-                        
+                    X_transformed = preprocessor.transform(input_data)
+                    
                         # CRITICAL: IsolationForest model was trained with log_price as additional feature
                         # Model expects 279 features: 278 from preprocessor + 1 log_price
                         # Add log_price feature (log of the price user entered)
@@ -1737,14 +1785,14 @@ elif page == "🚨 Phát hiện bất thường":
                         # Predict anomaly with augmented features (279 features)
                         anomaly_score = model.decision_function(X_transformed_aug)[0]
                         predictions = model.predict(X_transformed_aug)
-                        is_anomaly = predictions[0] == -1
-                        
-                        # Validate scores
-                        if np.isnan(anomaly_score) or np.isinf(anomaly_score):
-                            st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
-                        else:
+                    is_anomaly = predictions[0] == -1
+                    
+                    # Validate scores
+                    if np.isnan(anomaly_score) or np.isinf(anomaly_score):
+                        st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
+                    else:
                             # Display result with enhanced UI
-                            if is_anomaly:
+                        if is_anomaly:
                                 st.markdown("""
                                 <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2); border: 3px solid #ef4444;'>
                                     <div style='font-size: 4rem; margin-bottom: 1rem;'>⚠️</div>
@@ -1753,11 +1801,11 @@ elif page == "🚨 Phát hiện bất thường":
                                     <p style='color: #7f1d1d; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại thông tin và so sánh với các xe tương tự.</p>
                                 </div>
                                 """.format(anomaly_score), unsafe_allow_html=True)
-                                
-                                # Show predicted price for comparison
-                                try:
-                                    price_model, _, _ = load_price_model()
-                                    if price_model is not None:
+                            
+                            # Show predicted price for comparison
+                            try:
+                                price_model, _, _ = load_price_model()
+                                if price_model is not None:
                                         # Use X_transformed (278 features) for price prediction, not X_transformed_aug
                                         if hasattr(X_transformed, 'toarray'):
                                             X_for_price = X_transformed.toarray()
@@ -1765,7 +1813,7 @@ elif page == "🚨 Phát hiện bất thường":
                                             X_for_price = X_transformed
                                         
                                         price_pred = price_model.predict(X_for_price)[0]
-                                        if price_pred > 0:
+                                    if price_pred > 0:
                                             st.markdown("---")
                                             col_comp1, col_comp2 = st.columns(2)
                                             with col_comp1:
@@ -1783,13 +1831,57 @@ elif page == "🚨 Phát hiện bất thường":
                                                 </div>
                                                 """.format(gia_vnd/1_000_000), unsafe_allow_html=True)
                                             
-                                            diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
-                                            if diff_pct > 30:
-                                                st.warning(f"⚠️ **Chênh lệch {diff_pct:.1f}%** so với giá dự đoán - đây là lý do phát hiện bất thường")
-                                except Exception as e:
-                                    # Silently fail - not critical
-                                    pass
-                            else:
+                                        diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
+                                            diff_amount = abs(price_pred - gia_vnd) / 1_000_000
+                                            
+                                            st.markdown("---")
+                                            st.markdown("#### 📊 Phân tích chi tiết")
+                                            
+                                            if gia_vnd > price_pred:
+                                                st.warning(f"""
+                                                **📈 Giá bạn nhập CAO HƠN {diff_pct:.1f}%** so với giá dự đoán hợp lý
+                                                - Chênh lệch: **{diff_amount:.2f} triệu VNĐ**
+                                                - Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ
+                                                - Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ
+                                                
+                                                💡 **Gợi ý:** Nếu bạn là người mua, nên thương lượng hoặc tìm xe khác. Nếu bạn là người bán, có thể giá này hợp lý nếu xe có phụ kiện đặc biệt hoặc tình trạng tốt hơn.
+                                                """)
+                                            else:
+                                                st.info(f"""
+                                                **📉 Giá bạn nhập THẤP HƠN {diff_pct:.1f}%** so với giá dự đoán hợp lý
+                                                - Chênh lệch: **{diff_amount:.2f} triệu VNĐ**
+                                                - Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ
+                                                - Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ
+                                                
+                                                💡 **Gợi ý:** Đây có thể là một cơ hội tốt nếu bạn là người mua. Tuy nhiên, nên kiểm tra kỹ tình trạng xe và lịch sử sửa chữa.
+                                                """)
+                                            
+                                            # Action recommendations
+                                            with st.expander("💡 **Khuyến nghị hành động**", expanded=False):
+                                                st.markdown("""
+                                                <div style='padding: 1rem; background: linear-gradient(135deg, rgba(255, 251, 235, 0.9) 0%, rgba(254, 243, 199, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #f59e0b;'>
+                                                    <h4 style='color: #92400e; margin-top: 0;'>🎯 Nếu bạn là người MUA:</h4>
+                                                    <ul style='color: #78350f; line-height: 2;'>
+                                                        <li>✅ Kiểm tra kỹ tình trạng thực tế của xe</li>
+                                                        <li>✅ Xem lịch sử bảo dưỡng và sửa chữa</li>
+                                                        <li>✅ So sánh với các xe tương tự trên thị trường</li>
+                                                        <li>✅ Thương lượng giá nếu giá quá cao so với dự đoán</li>
+                                                        <li>⚠️ Cẩn thận với giá quá thấp - có thể có vấn đề ẩn</li>
+                                                    </ul>
+                                                    
+                                                    <h4 style='color: #92400e; margin-top: 1.5rem;'>🎯 Nếu bạn là người BÁN:</h4>
+                                                    <ul style='color: #78350f; line-height: 2;'>
+                                                        <li>✅ Giải thích lý do giá cao (nếu có phụ kiện, tình trạng tốt...)</li>
+                                                        <li>✅ Cung cấp đầy đủ thông tin và hình ảnh</li>
+                                                        <li>✅ So sánh với các xe tương tự để chứng minh giá hợp lý</li>
+                                                        <li>⚠️ Nếu giá quá cao, cân nhắc điều chỉnh để phù hợp thị trường</li>
+                                                    </ul>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                            except Exception as e:
+                                # Silently fail - not critical
+                                pass
+                        else:
                                 st.markdown("""
                                 <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2); border: 3px solid #10b981;'>
                                     <div style='font-size: 4rem; margin-bottom: 1rem;'>✅</div>
@@ -1799,11 +1891,11 @@ elif page == "🚨 Phát hiện bất thường":
                                 </div>
                                 """.format(anomaly_score), unsafe_allow_html=True)
                         
-                    except Exception as e:
-                        st.error(f"Lỗi: {str(e)}")
-                        import traceback
-                        with st.expander("Chi tiết lỗi"):
-                            st.code(traceback.format_exc())
+                except Exception as e:
+                    st.error(f"Lỗi: {str(e)}")
+                    import traceback
+                    with st.expander("Chi tiết lỗi"):
+                        st.code(traceback.format_exc())
 
 # Recommendation page
 elif page == "🔍 Gợi ý xe tương tự":
@@ -1920,21 +2012,53 @@ elif page == "🔍 Gợi ý xe tương tự":
                     similar = find_similar_bikes(bike_info, sample_data, top_n=top_n)
                     
                     if similar:
-                        st.subheader(f"🎯 {len(similar)} xe tương tự")
+                        st.markdown("---")
+                        st.markdown(f"### 🎯 Tìm thấy {len(similar)} xe tương tự")
+                        st.caption("💡 Các xe được sắp xếp theo độ tương đồng, từ cao đến thấp")
+                        
                         for i, bike in enumerate(similar, 1):
                             with st.container():
-                                cols = st.columns([1, 2, 1, 1])
-                                with cols[0]:
-                                    st.write(f"**#{i}**")
-                                with cols[1]:
+                                # Create a card for each bike
                                     title = bike.get('Tiêu đề', bike.get('tieu_de', 'N/A'))
-                                    st.write(f"**{title}**")
-                                with cols[2]:
                                     price = parse_price(bike.get('Giá', bike.get('gia_vnd', None)))
-                                    st.write(format_price(price))
-                                with cols[3]:
-                                    st.write(bike.get('Thương hiệu', bike.get('thuong_hieu', 'N/A')))
-                                st.divider()
+                                brand = bike.get('Thương hiệu', bike.get('thuong_hieu', 'N/A'))
+                                year = bike.get('Năm đăng ký', bike.get('nam_dang_ky', 'N/A'))
+                                km = bike.get('Số Km đã đi', bike.get('so_km', 'N/A'))
+                                
+                                # Card styling based on rank
+                                if i == 1:
+                                    card_color = "linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%)"
+                                    border_color = "#10b981"
+                                    badge = "🥇 Tương đồng nhất"
+                                elif i <= 3:
+                                    card_color = "linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%)"
+                                    border_color = "#3b82f6"
+                                    badge = f"🥈 Top {i}"
+                                else:
+                                    card_color = "linear-gradient(135deg, rgba(249, 250, 251, 0.95) 0%, rgba(243, 244, 246, 0.95) 100%)"
+                                    border_color = "#9ca3af"
+                                    badge = f"#{i}"
+                                
+                                st.markdown(f"""
+                                <div style='padding: 1.5rem; margin: 1rem 0; background: {card_color}; border-radius: 1rem; border-left: 5px solid {border_color}; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);'>
+                                    <div style='display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;'>
+                                        <div style='flex: 1;'>
+                                            <div style='display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;'>
+                                                <span style='background: {border_color}; color: white; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.85rem;'>{badge}</span>
+                                                <span style='color: #6b7280; font-size: 0.9rem;'>{brand}</span>
+                                            </div>
+                                            <h4 style='color: #1f2937; margin: 0 0 0.75rem 0; font-size: 1.1rem; font-weight: 600;'>{title}</h4>
+                                        </div>
+                                        <div style='text-align: right;'>
+                                            <p style='color: #667eea; font-size: 1.5rem; font-weight: 700; margin: 0;'>{format_price(price)}</p>
+                                        </div>
+                                    </div>
+                                    <div style='display: flex; gap: 1.5rem; color: #6b7280; font-size: 0.9rem;'>
+                                        <span>📅 Năm: {year}</span>
+                                        <span>🛣️ Km: {km if km != 'N/A' else 'N/A'}</span>
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
                     else:
                         st.warning("Không tìm thấy xe tương tự")
                 else:
