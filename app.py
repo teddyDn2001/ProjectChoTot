@@ -1382,8 +1382,33 @@ elif page == "💰 Dự đoán giá":
     </div>
     """, unsafe_allow_html=True)
     
-    # Explanation box
-    with st.expander("ℹ️ **Giải thích chức năng: Dự đoán giá**", expanded=True):
+    # Explanation box - similar to clustering page
+    st.markdown("""
+    <div class="info-box" style='margin-bottom: 2rem;'>
+        <h3 style='color: #667eea; margin-top: 0;'>💡 Dự đoán giá xe máy giúp:</h3>
+        <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;'>
+            <div>
+                <strong>💰 Định giá hợp lý</strong><br>
+                <span style='color: #6b7280;'>Dự đoán giá bán phù hợp dựa trên đặc điểm xe và thị trường</span>
+            </div>
+            <div>
+                <strong>📊 So sánh thị trường</strong><br>
+                <span style='color: #6b7280;'>Biết được giá xe của bạn so với mức giá thị trường</span>
+            </div>
+            <div>
+                <strong>🎯 Hỗ trợ quyết định</strong><br>
+                <span style='color: #6b7280;'>Giúp người mua và người bán đưa ra quyết định hợp lý</span>
+            </div>
+            <div>
+                <strong>🤖 AI-Powered</strong><br>
+                <span style='color: #6b7280;'>Sử dụng Machine Learning được huấn luyện trên 7,208+ tin đăng</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Detailed explanation in expander
+    with st.expander("ℹ️ **Tìm hiểu thêm về chức năng Dự đoán giá**", expanded=False):
         st.markdown("""
         <div style='padding: 1rem; background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #3b82f6;'>
             <h3 style='color: #1e40af; margin-top: 0;'>🎯 Chức năng này làm gì?</h3>
@@ -1622,8 +1647,33 @@ elif page == "🚨 Phát hiện bất thường":
     </div>
     """, unsafe_allow_html=True)
     
-    # Explanation box
-    with st.expander("ℹ️ **Giải thích chức năng: Phát hiện bất thường**", expanded=True):
+    # Explanation box - similar to clustering page
+    st.markdown("""
+    <div class="info-box" style='margin-bottom: 2rem;'>
+        <h3 style='color: #f59e0b; margin-top: 0;'>💡 Phát hiện giá bất thường giúp:</h3>
+        <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;'>
+            <div>
+                <strong>⚠️ Cảnh báo giá bất thường</strong><br>
+                <span style='color: #6b7280;'>Phát hiện các tin đăng có giá quá cao hoặc quá thấp so với thị trường</span>
+            </div>
+            <div>
+                <strong>🔍 Phân tích đa chiều</strong><br>
+                <span style='color: #6b7280;'>Xem xét tất cả yếu tố: thương hiệu, năm, km, tình trạng, vị trí...</span>
+            </div>
+            <div>
+                <strong>💰 So sánh giá</strong><br>
+                <span style='color: #6b7280;'>So sánh giá bạn nhập với giá dự đoán hợp lý để đánh giá</span>
+            </div>
+            <div>
+                <strong>🌲 Isolation Forest</strong><br>
+                <span style='color: #6b7280;'>Sử dụng thuật toán Isolation Forest để phát hiện outliers</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Detailed explanation in expander
+    with st.expander("ℹ️ **Tìm hiểu thêm về chức năng Phát hiện bất thường**", expanded=False):
         st.markdown("""
         <div style='padding: 1rem; background: linear-gradient(135deg, rgba(255, 251, 235, 0.9) 0%, rgba(254, 243, 199, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #f59e0b;'>
             <h3 style='color: #92400e; margin-top: 0;'>🎯 Chức năng này làm gì?</h3>
@@ -1908,8 +1958,33 @@ elif page == "🔍 Gợi ý xe tương tự":
     </div>
     """, unsafe_allow_html=True)
     
-    # Explanation box
-    with st.expander("ℹ️ **Giải thích chức năng: Gợi ý xe tương tự**", expanded=True):
+    # Explanation box - similar to clustering page
+    st.markdown("""
+    <div class="info-box" style='margin-bottom: 2rem;'>
+        <h3 style='color: #10b981; margin-top: 0;'>💡 Gợi ý xe tương tự giúp:</h3>
+        <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;'>
+            <div>
+                <strong>🔍 Tìm xe tương đồng</strong><br>
+                <span style='color: #6b7280;'>Tìm các xe máy có đặc điểm tương tự với xe bạn quan tâm</span>
+            </div>
+            <div>
+                <strong>💰 So sánh giá</strong><br>
+                <span style='color: #6b7280;'>So sánh giá của các xe cùng loại để đưa ra quyết định</span>
+            </div>
+            <div>
+                <strong>🎯 Content-Based Filtering</strong><br>
+                <span style='color: #6b7280;'>Sử dụng thuật toán Content-Based và KNN để gợi ý chính xác</span>
+            </div>
+            <div>
+                <strong>📊 Đa dạng tìm kiếm</strong><br>
+                <span style='color: #6b7280;'>Tìm theo ID, thương hiệu, dòng xe, hoặc tiêu chí tùy chỉnh</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Detailed explanation in expander
+    with st.expander("ℹ️ **Tìm hiểu thêm về chức năng Gợi ý xe tương tự**", expanded=False):
         st.markdown("""
         <div style='padding: 1rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.9) 0%, rgba(209, 250, 229, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #10b981;'>
             <h3 style='color: #047857; margin-top: 0;'>🎯 Chức năng này làm gì?</h3>
