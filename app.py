@@ -732,8 +732,112 @@ st.markdown("""
         color: white;
     }
     
+    /* Accessibility Improvements */
+    /* Focus indicators for keyboard navigation */
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    [role="button"]:focus-visible {
+        outline: 3px solid #667eea !important;
+        outline-offset: 2px !important;
+    }
+    
+    /* ARIA labels support */
+    [aria-label], [aria-labelledby] {
+        position: relative;
+    }
+    
+    /* Screen reader only text */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+    
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .feature-card, .status-card, .info-box {
+            border: 2px solid #1f2937 !important;
+        }
+        button {
+            border: 2px solid currentColor !important;
+        }
+    }
+    
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+    
+    /* Touch-friendly targets (minimum 44x44px) */
+    button, .stButton>button, [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
     /* Responsive Design */
     @media (max-width: 768px) {
+        /* Stack columns on mobile */
+        [data-testid="column"] {
+            width: 100% !important;
+            margin-bottom: 1rem;
+        }
+        
+        /* Reduce padding on mobile */
+        .main .block-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        /* Smaller header on mobile */
+        .main-header {
+            font-size: 2rem !important;
+            padding: 0.5rem 0;
+        }
+        
+        /* Stack feature cards */
+        .feature-card {
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+        }
+        
+        /* Full width buttons on mobile */
+    .stButton>button {
+        width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Adjust form inputs */
+        .stSelectbox, .stTextInput, .stNumberInput {
+            width: 100%;
+        }
+        
+        /* Smaller font sizes on mobile */
+        h1 { font-size: 1.75rem !important; }
+        h2 { font-size: 1.5rem !important; }
+        h3 { font-size: 1.25rem !important; }
+        
+        /* Info boxes stack on mobile */
+        .info-box {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
         .main-header {
             font-size: 2.5rem;
         }
@@ -1464,48 +1568,136 @@ elif page == "💰 Dự đoán giá":
     st.markdown("### 📝 Điền thông tin xe")
     st.markdown("💡 *Vui lòng điền đầy đủ thông tin để có kết quả dự đoán chính xác nhất*")
     
+    # Quick actions buttons
+    col_actions1, col_actions2, col_actions3 = st.columns(3)
+    with col_actions1:
+        if st.button("📝 Điền ví dụ (Honda SH)", use_container_width=True, help="Tự động điền thông tin ví dụ cho Honda SH"):
+            st.session_state.price_form_example = {
+                'thuong_hieu': 'Honda',
+                'dong_xe': 'SH',
+                'nam_dang_ky': 2020,
+                'so_km': 10000,
+                'tinh_trang': 'Đã sử dụng',
+                'loai_xe': 'Tay ga',
+                'xuat_xu': 'Thái Lan',
+                'dung_tich_cc': 150,
+                'tinh_thanh': 'Hồ Chí Minh',
+                'quan': 'Quận 1'
+            }
+            st.rerun()
+    with col_actions2:
+        if st.button("📝 Điền ví dụ (Yamaha Exciter)", use_container_width=True, help="Tự động điền thông tin ví dụ cho Yamaha Exciter"):
+            st.session_state.price_form_example = {
+                'thuong_hieu': 'Yamaha',
+                'dong_xe': 'Exciter',
+                'nam_dang_ky': 2019,
+                'so_km': 15000,
+                'tinh_trang': 'Đã sử dụng',
+                'loai_xe': 'Tay côn',
+                'xuat_xu': 'Việt Nam',
+                'dung_tich_cc': 150,
+                'tinh_thanh': 'Hồ Chí Minh',
+                'quan': 'Quận 7'
+            }
+            st.rerun()
+    with col_actions3:
+        if st.button("🗑️ Xóa form", use_container_width=True, help="Xóa tất cả thông tin đã nhập"):
+            if 'price_form_example' in st.session_state:
+                del st.session_state.price_form_example
+            st.rerun()
+    
+    st.markdown("---")
+    
+    # Initialize session state for form data
+    if 'price_form_example' not in st.session_state:
+        st.session_state.price_form_example = {}
+    
         with st.form("price_prediction_form"):
             col1, col2 = st.columns(2)
             
             with col1:
                 st.markdown("#### 🏷️ Thông tin cơ bản")
                 thuong_hieu = st.selectbox("Thương hiệu *", ["Honda", "Yamaha", "SYM", "Piaggio", "Vespa", "Khác"], 
-                                          help="Chọn thương hiệu xe máy")
+                                          help="Chọn thương hiệu xe máy",
+                                          value=st.session_state.price_form_example.get('thuong_hieu', "Honda"),
+                                          key="price_thuong_hieu")
                 dong_xe = st.text_input("Dòng xe *", placeholder="Ví dụ: SH, Air Blade, Exciter, Winner", 
-                                       help="Nhập tên dòng xe (ví dụ: SH, Air Blade, Exciter)")
-                nam_dang_ky = st.number_input("Năm đăng ký *", min_value=1990, max_value=2024, value=2020,
-                                             help="Năm đăng ký của xe (1990-2024)")
-                so_km = st.number_input("Số km đã đi *", min_value=0, value=10000, step=1000,
-                                       help="Số kilomet xe đã chạy (0 nếu xe mới)")
+                                       help="Nhập tên dòng xe (ví dụ: SH, Air Blade, Exciter)",
+                                       value=st.session_state.price_form_example.get('dong_xe', ""),
+                                       key="price_dong_xe")
+                # Validation for dong_xe
+                if dong_xe and len(dong_xe.strip()) < 2:
+                    st.caption("⚠️ Tên dòng xe quá ngắn. Vui lòng nhập đầy đủ hơn.", help="Ví dụ: SH, Air Blade, Exciter")
+                
+                nam_dang_ky = st.number_input("Năm đăng ký *", min_value=1990, max_value=2024, 
+                                             value=st.session_state.price_form_example.get('nam_dang_ky', 2020),
+                                             help="Năm đăng ký của xe (1990-2024)",
+                                             key="price_nam_dang_ky")
+                so_km = st.number_input("Số km đã đi *", min_value=0, 
+                                       value=st.session_state.price_form_example.get('so_km', 10000), 
+                                       step=1000,
+                                       help="Số kilomet xe đã chạy (0 nếu xe mới)",
+                                       key="price_so_km")
+                # Validation hint for so_km
+                if so_km > 100000:
+                    st.caption("💡 Xe đã đi nhiều km, giá có thể thấp hơn", help="Xe trên 100,000km thường có giá thấp hơn")
             
             with col2:
                 st.markdown("#### 🔧 Thông tin kỹ thuật")
                 tinh_trang = st.selectbox("Tình trạng *", ["Mới", "Đã sử dụng", "Cần sửa chữa"],
-                                         help="Tình trạng hiện tại của xe")
+                                         help="Tình trạng hiện tại của xe",
+                                         value=st.session_state.price_form_example.get('tinh_trang', "Đã sử dụng"),
+                                         key="price_tinh_trang")
                 loai_xe = st.selectbox("Loại xe *", ["Tay ga", "Số", "Tay côn", "Khác"],
-                                      help="Loại hộp số của xe")
+                                      help="Loại hộp số của xe",
+                                      value=st.session_state.price_form_example.get('loai_xe', "Tay ga"),
+                                      key="price_loai_xe")
                 xuat_xu = st.selectbox("Xuất xứ *", ["Việt Nam", "Thái Lan", "Indonesia", "Nhật Bản", "Khác"],
-                                      help="Nơi sản xuất xe")
-                dung_tich_cc = st.number_input("Dung tích (cc) *", min_value=50, max_value=1000, value=125, step=25,
-                                              help="Dung tích xi-lanh (50-1000cc)")
+                                      help="Nơi sản xuất xe",
+                                      value=st.session_state.price_form_example.get('xuat_xu', "Thái Lan"),
+                                      key="price_xuat_xu")
+                dung_tich_cc = st.number_input("Dung tích (cc) *", min_value=50, max_value=1000, 
+                                              value=st.session_state.price_form_example.get('dung_tich_cc', 125), 
+                                              step=25,
+                                              help="Dung tích xi-lanh (50-1000cc)",
+                                              key="price_dung_tich_cc")
             
             st.markdown("#### 📍 Thông tin địa điểm")
             col_loc1, col_loc2 = st.columns(2)
             with col_loc1:
                 tinh_thanh = st.selectbox("Tỉnh/Thành *", ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Khác"],
-                                         help="Tỉnh/thành phố nơi bán xe")
+                                         help="Tỉnh/thành phố nơi bán xe",
+                                         value=st.session_state.price_form_example.get('tinh_thanh', "Hồ Chí Minh"),
+                                         key="price_tinh_thanh")
             with col_loc2:
                 quan = st.text_input("Quận/Huyện", placeholder="Ví dụ: Quận 1, Quận 7, Quận Bình Thạnh",
-                                    help="Quận/huyện (có thể để trống)")
+                                    help="Quận/huyện (có thể để trống)",
+                                    value=st.session_state.price_form_example.get('quan', ""),
+                                    key="price_quan")
+            
+            # Form validation
+            validation_errors = []
+            if not dong_xe or len(dong_xe.strip()) < 2:
+                validation_errors.append("⚠️ Vui lòng nhập tên dòng xe (ít nhất 2 ký tự)")
+            
+            if validation_errors:
+                for err in validation_errors:
+                    st.warning(err)
             
             st.markdown("---")
-            submitted = st.form_submit_button("🔮 Dự đoán giá", use_container_width=True, type="primary")
+            submitted = st.form_submit_button("🔮 Dự đoán giá", use_container_width=True, type="primary", 
+                                             disabled=len(validation_errors) > 0)
             
             if submitted:
+                # Clear example data after submission
+                if 'price_form_example' in st.session_state:
+                    del st.session_state.price_form_example
                 # Check if model is available
                 if error or model is None or preprocessor is None:
                     st.error("❌ Không thể dự đoán vì model chưa được load. Vui lòng xem hướng dẫn khắc phục ở trên.")
                 else:
+                    # Show loading state
+                    with st.spinner("🔄 Đang xử lý dự đoán giá... Vui lòng đợi trong giây lát"):
                 try:
                     # Get feature names from preprocessor - MUST use exact order
                     from project1.config import PREPROCESSOR_PATH
@@ -1560,80 +1752,94 @@ elif page == "💰 Dự đoán giá":
                     if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
                         st.warning("⚠️ Giá dự đoán không hợp lệ. Vui lòng kiểm tra lại thông tin đầu vào.")
                     else:
-                            # Display result with beautiful UI
-                            st.markdown("---")
-                            st.markdown("### 🎯 Kết quả dự đoán")
-                            
-                            # Main result card
-                            st.markdown("""
-                            <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);'>
-                                <div style='font-size: 4rem; margin-bottom: 1rem;'>💰</div>
-                                <h3 style='color: #6b7280; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 600;'>Giá dự đoán</h3>
-                                <div class="price-display">{:,.0f} VNĐ</div>
-                                <p style='font-size: 1.75rem; color: #667eea; font-weight: 700; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.5); border-radius: 0.75rem; display: inline-block;'>
-                                    ≈ {:.2f} triệu VNĐ
-                                </p>
-                            </div>
-                            """.format(prediction, prediction/1_000_000), unsafe_allow_html=True)
-                            
-                            # Additional info cards
-                            st.markdown("#### 📊 Thông tin xe đã nhập")
-                            col_info1, col_info2, col_info3, col_info4 = st.columns(4)
-                            with col_info1:
-                                st.markdown(f"""
-                                <div style='padding: 1rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #3b82f6;'>
-                                    <p style='color: #1e40af; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Thương hiệu</p>
-                                    <p style='color: #1e3a8a; font-weight: 700; margin: 0; font-size: 1.1rem;'>{thuong_hieu}</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            with col_info2:
-                                st.markdown(f"""
-                                <div style='padding: 1rem; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #10b981;'>
-                                    <p style='color: #166534; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Năm đăng ký</p>
-                                    <p style='color: #14532d; font-weight: 700; margin: 0; font-size: 1.1rem;'>{nam_dang_ky}</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            with col_info3:
-                                st.markdown(f"""
-                                <div style='padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #f59e0b;'>
-                                    <p style='color: #92400e; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Số km</p>
-                                    <p style='color: #78350f; font-weight: 700; margin: 0; font-size: 1.1rem;'>{so_km:,} km</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            with col_info4:
-                                st.markdown(f"""
-                                <div style='padding: 1rem; background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #ec4899;'>
-                                    <p style='color: #9f1239; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Tình trạng</p>
-                                    <p style='color: #831843; font-weight: 700; margin: 0; font-size: 1.1rem;'>{tinh_trang}</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            
-                            # Tips and recommendations
-                            st.markdown("---")
-                            with st.expander("💡 **Tips & Gợi ý sau khi xem kết quả**", expanded=False):
+                                # Display result with beautiful UI
+                                st.markdown("---")
+                                st.markdown("### 🎯 Kết quả dự đoán")
+                                
+                                # Main result card
                                 st.markdown("""
-                                <div style='padding: 1rem; background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #3b82f6;'>
-                                    <h4 style='color: #1e40af; margin-top: 0;'>📌 Những điều cần lưu ý:</h4>
-                                    <ul style='color: #1e3a8a; line-height: 2;'>
-                                        <li><strong>Giá dự đoán chỉ mang tính tham khảo:</strong> Giá thực tế có thể khác do nhiều yếu tố như phụ kiện, tình trạng thực tế, thời điểm mua bán...</li>
-                                        <li><strong>So sánh với thị trường:</strong> Nên xem thêm các tin đăng tương tự để có cái nhìn tổng quan hơn</li>
-                                        <li><strong>Kiểm tra giá bất thường:</strong> Sử dụng chức năng "Phát hiện bất thường" để kiểm tra xem giá có phù hợp không</li>
-                                        <li><strong>Tìm xe tương tự:</strong> Sử dụng chức năng "Gợi ý xe tương tự" để so sánh giá với các xe khác</li>
-                                    </ul>
-                                    <h4 style='color: #1e40af; margin-top: 1.5rem;'>🎯 Các bước tiếp theo:</h4>
-                                    <ol style='color: #1e3a8a; line-height: 2;'>
-                                        <li>Ghi nhận giá dự đoán này làm mức tham khảo</li>
-                                        <li>Tìm các xe tương tự để so sánh giá</li>
-                                        <li>Kiểm tra giá có bất thường không (nếu bạn đã biết giá cụ thể)</li>
-                                        <li>Đàm phán dựa trên thông tin đã có</li>
-                                    </ol>
+                                <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(195, 207, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);'>
+                                    <div style='font-size: 4rem; margin-bottom: 1rem;'>💰</div>
+                                    <h3 style='color: #6b7280; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 600;'>Giá dự đoán</h3>
+                                    <div class="price-display">{:,.0f} VNĐ</div>
+                                    <p style='font-size: 1.75rem; color: #667eea; font-weight: 700; margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.5); border-radius: 0.75rem; display: inline-block;'>
+                                        ≈ {:.2f} triệu VNĐ
+                                    </p>
                                 </div>
-                                """, unsafe_allow_html=True)
+                                """.format(prediction, prediction/1_000_000), unsafe_allow_html=True)
+                                
+                                # Additional info cards
+                                st.markdown("#### 📊 Thông tin xe đã nhập")
+                                col_info1, col_info2, col_info3, col_info4 = st.columns(4)
+                                with col_info1:
+                                    st.markdown(f"""
+                                    <div style='padding: 1rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #3b82f6;'>
+                                        <p style='color: #1e40af; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Thương hiệu</p>
+                                        <p style='color: #1e3a8a; font-weight: 700; margin: 0; font-size: 1.1rem;'>{thuong_hieu}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                with col_info2:
+                                    st.markdown(f"""
+                                    <div style='padding: 1rem; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #10b981;'>
+                                        <p style='color: #166534; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Năm đăng ký</p>
+                                        <p style='color: #14532d; font-weight: 700; margin: 0; font-size: 1.1rem;'>{nam_dang_ky}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                with col_info3:
+                                    st.markdown(f"""
+                                    <div style='padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #f59e0b;'>
+                                        <p style='color: #92400e; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Số km</p>
+                                        <p style='color: #78350f; font-weight: 700; margin: 0; font-size: 1.1rem;'>{so_km:,} km</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                with col_info4:
+                                    st.markdown(f"""
+                                    <div style='padding: 1rem; background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-radius: 0.75rem; text-align: center; border-left: 4px solid #ec4899;'>
+                                        <p style='color: #9f1239; font-weight: 600; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>Tình trạng</p>
+                                        <p style='color: #831843; font-weight: 700; margin: 0; font-size: 1.1rem;'>{tinh_trang}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                
+                                # Tips and recommendations
+                                st.markdown("---")
+                                with st.expander("💡 **Tips & Gợi ý sau khi xem kết quả**", expanded=False):
+                                    st.markdown("""
+                                    <div style='padding: 1rem; background: linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #3b82f6;'>
+                                        <h4 style='color: #1e40af; margin-top: 0;'>📌 Những điều cần lưu ý:</h4>
+                                        <ul style='color: #1e3a8a; line-height: 2;'>
+                                            <li><strong>Giá dự đoán chỉ mang tính tham khảo:</strong> Giá thực tế có thể khác do nhiều yếu tố như phụ kiện, tình trạng thực tế, thời điểm mua bán...</li>
+                                            <li><strong>So sánh với thị trường:</strong> Nên xem thêm các tin đăng tương tự để có cái nhìn tổng quan hơn</li>
+                                            <li><strong>Kiểm tra giá bất thường:</strong> Sử dụng chức năng "Phát hiện bất thường" để kiểm tra xem giá có phù hợp không</li>
+                                            <li><strong>Tìm xe tương tự:</strong> Sử dụng chức năng "Gợi ý xe tương tự" để so sánh giá với các xe khác</li>
+                                        </ul>
+                                        <h4 style='color: #1e40af; margin-top: 1.5rem;'>🎯 Các bước tiếp theo:</h4>
+                                        <ol style='color: #1e3a8a; line-height: 2;'>
+                                            <li>Ghi nhận giá dự đoán này làm mức tham khảo</li>
+                                            <li>Tìm các xe tương tự để so sánh giá</li>
+                                            <li>Kiểm tra giá có bất thường không (nếu bạn đã biết giá cụ thể)</li>
+                                            <li>Đàm phán dựa trên thông tin đã có</li>
+                                        </ol>
+                                    </div>
+                                    """, unsafe_allow_html=True)
                     
                 except Exception as e:
-                    st.error(f"Lỗi khi dự đoán: {str(e)}")
+                            st.error(f"❌ **Lỗi khi dự đoán giá**")
+                            st.markdown(f"""
+                            <div style='padding: 1rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); border-radius: 0.75rem; border-left: 5px solid #ef4444; margin: 1rem 0;'>
+                                <p style='color: #991b1b; margin: 0 0 0.5rem 0;'><strong>Chi tiết lỗi:</strong></p>
+                                <p style='color: #7f1d1d; margin: 0;'>{str(e)}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            st.info("""
+                            **💡 Cách khắc phục:**
+                            1. Kiểm tra lại thông tin đã nhập có đầy đủ và hợp lệ không
+                            2. Thử lại với thông tin khác
+                            3. Nếu lỗi vẫn tiếp tục, vui lòng reload trang và thử lại
+                            """)
+                            
                     import traceback
-                    with st.expander("Chi tiết lỗi"):
+                            with st.expander("🔍 Chi tiết kỹ thuật (dành cho developer)"):
                         st.code(traceback.format_exc())
 
 # Anomaly Detection page
@@ -1739,6 +1945,46 @@ elif page == "🚨 Phát hiện bất thường":
     # Show form regardless of model status
     st.markdown("### 📝 Điền thông tin xe và giá cần kiểm tra")
     st.markdown("💡 *Nhập thông tin xe và giá bạn muốn kiểm tra để xem có bất thường không*")
+    
+    # Quick actions buttons
+    col_actions1, col_actions2, col_actions3 = st.columns(3)
+    with col_actions1:
+        if st.button("📝 Điền ví dụ (Giá cao)", use_container_width=True, help="Ví dụ: Honda SH giá 100 triệu (có thể bất thường)"):
+            st.session_state.anomaly_form_example = {
+                'thuong_hieu': 'Honda',
+                'dong_xe': 'SH',
+                'nam_dang_ky': 2020,
+                'so_km': 10000,
+                'tinh_trang': 'Đã sử dụng',
+                'loai_xe': 'Tay ga',
+                'dung_tich_cc': 150,
+                'gia_vnd': 100000000  # 100 triệu - có thể bất thường
+            }
+            st.rerun()
+    with col_actions2:
+        if st.button("📝 Điền ví dụ (Giá bình thường)", use_container_width=True, help="Ví dụ: Honda SH giá 50 triệu (bình thường)"):
+            st.session_state.anomaly_form_example = {
+                'thuong_hieu': 'Honda',
+                'dong_xe': 'SH',
+                'nam_dang_ky': 2020,
+                'so_km': 10000,
+                'tinh_trang': 'Đã sử dụng',
+                'loai_xe': 'Tay ga',
+                'dung_tich_cc': 150,
+                'gia_vnd': 50000000  # 50 triệu - bình thường
+            }
+            st.rerun()
+    with col_actions3:
+        if st.button("🗑️ Xóa form", use_container_width=True, help="Xóa tất cả thông tin đã nhập"):
+            if 'anomaly_form_example' in st.session_state:
+                del st.session_state.anomaly_form_example
+            st.rerun()
+    
+    st.markdown("---")
+    
+    # Initialize session state for form data
+    if 'anomaly_form_example' not in st.session_state:
+        st.session_state.anomaly_form_example = {}
         
         with st.form("anomaly_detection_form"):
             col1, col2 = st.columns(2)
@@ -1746,36 +1992,76 @@ elif page == "🚨 Phát hiện bất thường":
             with col1:
                 st.markdown("#### 🏷️ Thông tin xe")
                 thuong_hieu = st.selectbox("Thương hiệu *", ["Honda", "Yamaha", "SYM", "Piaggio", "Vespa"],
-                                          help="Chọn thương hiệu xe")
+                                          help="Chọn thương hiệu xe",
+                                          value=st.session_state.anomaly_form_example.get('thuong_hieu', "Honda"),
+                                          key="anomaly_thuong_hieu")
                 dong_xe = st.text_input("Dòng xe *", placeholder="Ví dụ: SH, Air Blade, Exciter",
-                                       help="Nhập tên dòng xe")
-                nam_dang_ky = st.number_input("Năm đăng ký *", min_value=1990, max_value=2024, value=2020,
-                                             help="Năm đăng ký của xe")
-                so_km = st.number_input("Số km đã đi *", min_value=0, value=10000, step=1000,
-                                       help="Số kilomet xe đã chạy")
+                                       help="Nhập tên dòng xe",
+                                       value=st.session_state.anomaly_form_example.get('dong_xe', ""),
+                                       key="anomaly_dong_xe")
+                # Validation
+                if dong_xe and len(dong_xe.strip()) < 2:
+                    st.caption("⚠️ Tên dòng xe quá ngắn. Vui lòng nhập đầy đủ hơn.")
+                
+                nam_dang_ky = st.number_input("Năm đăng ký *", min_value=1990, max_value=2024, 
+                                             value=st.session_state.anomaly_form_example.get('nam_dang_ky', 2020),
+                                             help="Năm đăng ký của xe",
+                                             key="anomaly_nam_dang_ky")
+                so_km = st.number_input("Số km đã đi *", min_value=0, 
+                                       value=st.session_state.anomaly_form_example.get('so_km', 10000), 
+                                       step=1000,
+                                       help="Số kilomet xe đã chạy",
+                                       key="anomaly_so_km")
             
             with col2:
                 st.markdown("#### 🔧 Thông tin kỹ thuật & Giá")
                 tinh_trang = st.selectbox("Tình trạng *", ["Mới", "Đã sử dụng", "Cần sửa chữa"],
-                                         help="Tình trạng hiện tại của xe")
+                                         help="Tình trạng hiện tại của xe",
+                                         value=st.session_state.anomaly_form_example.get('tinh_trang', "Đã sử dụng"),
+                                         key="anomaly_tinh_trang")
                 loai_xe = st.selectbox("Loại xe *", ["Tay ga", "Số", "Tay côn"],
-                                      help="Loại hộp số của xe")
-                dung_tich_cc = st.number_input("Dung tích (cc) *", min_value=50, max_value=1000, value=125, step=25,
-                                              help="Dung tích xi-lanh")
+                                      help="Loại hộp số của xe",
+                                      value=st.session_state.anomaly_form_example.get('loai_xe', "Tay ga"),
+                                      key="anomaly_loai_xe")
+                dung_tich_cc = st.number_input("Dung tích (cc) *", min_value=50, max_value=1000, 
+                                              value=st.session_state.anomaly_form_example.get('dung_tich_cc', 125), 
+                                              step=25,
+                                              help="Dung tích xi-lanh",
+                                              key="anomaly_dung_tich_cc")
                 st.markdown("---")
                 st.markdown("#### 💰 Giá cần kiểm tra")
-                gia_vnd = st.number_input("Giá (VNĐ) *", min_value=0, value=50000000, step=1000000, format="%d",
-                                        help="Nhập giá bạn muốn kiểm tra (ví dụ: 50,000,000 VNĐ)")
+                gia_vnd = st.number_input("Giá (VNĐ) *", min_value=0, 
+                                        value=st.session_state.anomaly_form_example.get('gia_vnd', 50000000), 
+                                        step=1000000, format="%d",
+                                        help="Nhập giá bạn muốn kiểm tra (ví dụ: 50,000,000 VNĐ)",
+                                        key="anomaly_gia_vnd")
                 st.caption(f"💡 Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ")
             
+            # Form validation
+            validation_errors = []
+            if not dong_xe or len(dong_xe.strip()) < 2:
+                validation_errors.append("⚠️ Vui lòng nhập tên dòng xe (ít nhất 2 ký tự)")
+            if gia_vnd <= 0:
+                validation_errors.append("⚠️ Vui lòng nhập giá hợp lệ (lớn hơn 0)")
+            
+            if validation_errors:
+                for err in validation_errors:
+                    st.warning(err)
+            
             st.markdown("---")
-            submitted = st.form_submit_button("🔍 Kiểm tra giá bất thường", use_container_width=True, type="primary")
+            submitted = st.form_submit_button("🔍 Kiểm tra giá bất thường", use_container_width=True, type="primary",
+                                             disabled=len(validation_errors) > 0)
             
             if submitted:
+                # Clear example data after submission
+                if 'anomaly_form_example' in st.session_state:
+                    del st.session_state.anomaly_form_example
                 # Check if model is available
                 if error or model is None or preprocessor is None:
                     st.error("❌ Không thể phát hiện bất thường vì model chưa được load. Vui lòng xem hướng dẫn khắc phục ở trên.")
                 else:
+                    # Show loading state
+                    with st.spinner("🔄 Đang phân tích giá bất thường... Vui lòng đợi trong giây lát"):
                 try:
                     # Get feature names - MUST use exact order
                     from project1.config import PREPROCESSOR_PATH
@@ -1808,29 +2094,29 @@ elif page == "🚨 Phát hiện bất thường":
                         'quan': [""]
                     }, columns=all_features)  # Ensure correct column order
                     
-                        # Transform features
+                            # Transform features
                     X_transformed = preprocessor.transform(input_data)
                     
-                        # CRITICAL: IsolationForest model was trained with log_price as additional feature
-                        # Model expects 279 features: 278 from preprocessor + 1 log_price
-                        # Add log_price feature (log of the price user entered)
-                        from scipy import sparse
-                        import scipy.sparse as sp
-                        
-                        # Calculate log_price (same as training: log1p of price)
-                        price_for_iso = max(0, gia_vnd)  # Ensure non-negative
-                        log_price = np.log1p(price_for_iso).reshape(-1, 1)
-                        
-                        # Concatenate transformed features with log_price
-                        if sparse.issparse(X_transformed):
-                            from scipy.sparse import hstack, csr_matrix
-                            X_transformed_aug = hstack([X_transformed, csr_matrix(log_price)])
-                        else:
-                            X_transformed_aug = np.hstack([X_transformed, log_price])
-                        
-                        # Convert to dense if needed for prediction
-                        if hasattr(X_transformed_aug, 'toarray'):
-                            X_transformed_aug = X_transformed_aug.toarray()
+                            # CRITICAL: IsolationForest model was trained with log_price as additional feature
+                            # Model expects 279 features: 278 from preprocessor + 1 log_price
+                            # Add log_price feature (log of the price user entered)
+                            from scipy import sparse
+                            import scipy.sparse as sp
+                            
+                            # Calculate log_price (same as training: log1p of price)
+                            price_for_iso = max(0, gia_vnd)  # Ensure non-negative
+                            log_price = np.log1p(price_for_iso).reshape(-1, 1)
+                            
+                            # Concatenate transformed features with log_price
+                            if sparse.issparse(X_transformed):
+                                from scipy.sparse import hstack, csr_matrix
+                                X_transformed_aug = hstack([X_transformed, csr_matrix(log_price)])
+                            else:
+                                X_transformed_aug = np.hstack([X_transformed, log_price])
+                            
+                            # Convert to dense if needed for prediction
+                            if hasattr(X_transformed_aug, 'toarray'):
+                                X_transformed_aug = X_transformed_aug.toarray()
                         
                         # Predict anomaly with augmented features (279 features)
                         anomaly_score = model.decision_function(X_transformed_aug)[0]
