@@ -2117,108 +2117,108 @@ elif page == "🚨 Phát hiện bất thường":
                             # Convert to dense if needed for prediction
                             if hasattr(X_transformed_aug, 'toarray'):
                                 X_transformed_aug = X_transformed_aug.toarray()
-                        
-                        # Predict anomaly with augmented features (279 features)
-                        anomaly_score = model.decision_function(X_transformed_aug)[0]
-                        predictions = model.predict(X_transformed_aug)
+                            
+                            # Predict anomaly with augmented features (279 features)
+                            anomaly_score = model.decision_function(X_transformed_aug)[0]
+                            predictions = model.predict(X_transformed_aug)
                     is_anomaly = predictions[0] == -1
                     
                     # Validate scores
                     if np.isnan(anomaly_score) or np.isinf(anomaly_score):
                         st.warning("⚠️ Không thể tính anomaly score. Vui lòng kiểm tra lại thông tin.")
                     else:
-                            # Display result with enhanced UI
+                                # Display result with enhanced UI
                         if is_anomaly:
-                                st.markdown("""
-                                <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2); border: 3px solid #ef4444;'>
-                                    <div style='font-size: 4rem; margin-bottom: 1rem;'>⚠️</div>
-                                    <h2 style='color: #dc2626; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Phát hiện giá BẤT THƯỜNG</h2>
-                                    <p style='font-size: 1.3rem; color: #991b1b; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
-                                    <p style='color: #7f1d1d; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại thông tin và so sánh với các xe tương tự.</p>
-                                </div>
-                                """.format(anomaly_score), unsafe_allow_html=True)
+                                    st.markdown("""
+                                    <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2); border: 3px solid #ef4444;'>
+                                        <div style='font-size: 4rem; margin-bottom: 1rem;'>⚠️</div>
+                                        <h2 style='color: #dc2626; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Phát hiện giá BẤT THƯỜNG</h2>
+                                        <p style='font-size: 1.3rem; color: #991b1b; font-weight: 600; margin-bottom: 1.5rem;'>Anomaly Score: {:.4f}</p>
+                                        <p style='color: #7f1d1d; margin-top: 1rem; font-size: 1.1rem; line-height: 1.6;'>Giá này có vẻ không phù hợp với thị trường. Nên kiểm tra lại thông tin và so sánh với các xe tương tự.</p>
+                                    </div>
+                                    """.format(anomaly_score), unsafe_allow_html=True)
                             
                             # Show predicted price for comparison
                             try:
                                 price_model, _, _ = load_price_model()
                                 if price_model is not None:
-                                        # Use X_transformed (278 features) for price prediction, not X_transformed_aug
-                                        if hasattr(X_transformed, 'toarray'):
-                                            X_for_price = X_transformed.toarray()
-                                        else:
-                                            X_for_price = X_transformed
-                                        
-                                        price_pred = price_model.predict(X_for_price)[0]
-                                    if price_pred > 0:
-                                            st.markdown("---")
-                                            col_comp1, col_comp2 = st.columns(2)
-                                            with col_comp1:
-                                                st.markdown("""
-                                                <div style='padding: 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 1rem; border-left: 4px solid #3b82f6;'>
-                                                    <h3 style='color: #1e40af; margin-top: 0;'>💡 Giá dự đoán hợp lý</h3>
-                                                    <p style='font-size: 1.5rem; font-weight: 700; color: #1e3a8a;'>{:.2f} triệu VNĐ</p>
-                                                </div>
-                                                """.format(price_pred/1_000_000), unsafe_allow_html=True)
-                                            with col_comp2:
-                                                st.markdown("""
-                                                <div style='padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 1rem; border-left: 4px solid #f59e0b;'>
-                                                    <h3 style='color: #92400e; margin-top: 0;'>💰 Giá bạn nhập</h3>
-                                                    <p style='font-size: 1.5rem; font-weight: 700; color: #78350f;'>{:.2f} triệu VNĐ</p>
-                                                </div>
-                                                """.format(gia_vnd/1_000_000), unsafe_allow_html=True)
-                                            
-                                        diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
-                                            diff_amount = abs(price_pred - gia_vnd) / 1_000_000
-                                            
-                                            st.markdown("---")
-                                            st.markdown("#### 📊 Phân tích chi tiết")
-                                            
-                                            if gia_vnd > price_pred:
-                                                st.warning(f"""
-                                                **📈 Giá bạn nhập CAO HƠN {diff_pct:.1f}%** so với giá dự đoán hợp lý
-                                                - Chênh lệch: **{diff_amount:.2f} triệu VNĐ**
-                                                - Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ
-                                                - Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ
-                                                
-                                                💡 **Gợi ý:** Nếu bạn là người mua, nên thương lượng hoặc tìm xe khác. Nếu bạn là người bán, có thể giá này hợp lý nếu xe có phụ kiện đặc biệt hoặc tình trạng tốt hơn.
-                                                """)
+                                            # Use X_transformed (278 features) for price prediction, not X_transformed_aug
+                                            if hasattr(X_transformed, 'toarray'):
+                                                X_for_price = X_transformed.toarray()
                                             else:
-                                                st.info(f"""
-                                                **📉 Giá bạn nhập THẤP HƠN {diff_pct:.1f}%** so với giá dự đoán hợp lý
-                                                - Chênh lệch: **{diff_amount:.2f} triệu VNĐ**
-                                                - Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ
-                                                - Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ
-                                                
-                                                💡 **Gợi ý:** Đây có thể là một cơ hội tốt nếu bạn là người mua. Tuy nhiên, nên kiểm tra kỹ tình trạng xe và lịch sử sửa chữa.
-                                                """)
+                                                X_for_price = X_transformed
                                             
-                                            # Action recommendations
-                                            with st.expander("💡 **Khuyến nghị hành động**", expanded=False):
-                                                st.markdown("""
-                                                <div style='padding: 1rem; background: linear-gradient(135deg, rgba(255, 251, 235, 0.9) 0%, rgba(254, 243, 199, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #f59e0b;'>
-                                                    <h4 style='color: #92400e; margin-top: 0;'>🎯 Nếu bạn là người MUA:</h4>
-                                                    <ul style='color: #78350f; line-height: 2;'>
-                                                        <li>✅ Kiểm tra kỹ tình trạng thực tế của xe</li>
-                                                        <li>✅ Xem lịch sử bảo dưỡng và sửa chữa</li>
-                                                        <li>✅ So sánh với các xe tương tự trên thị trường</li>
-                                                        <li>✅ Thương lượng giá nếu giá quá cao so với dự đoán</li>
-                                                        <li>⚠️ Cẩn thận với giá quá thấp - có thể có vấn đề ẩn</li>
-                                                    </ul>
+                                            price_pred = price_model.predict(X_for_price)[0]
+                                    if price_pred > 0:
+                                                st.markdown("---")
+                                                col_comp1, col_comp2 = st.columns(2)
+                                                with col_comp1:
+                                                    st.markdown("""
+                                                    <div style='padding: 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 1rem; border-left: 4px solid #3b82f6;'>
+                                                        <h3 style='color: #1e40af; margin-top: 0;'>💡 Giá dự đoán hợp lý</h3>
+                                                        <p style='font-size: 1.5rem; font-weight: 700; color: #1e3a8a;'>{:.2f} triệu VNĐ</p>
+                                                    </div>
+                                                    """.format(price_pred/1_000_000), unsafe_allow_html=True)
+                                                with col_comp2:
+                                                    st.markdown("""
+                                                    <div style='padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 1rem; border-left: 4px solid #f59e0b;'>
+                                                        <h3 style='color: #92400e; margin-top: 0;'>💰 Giá bạn nhập</h3>
+                                                        <p style='font-size: 1.5rem; font-weight: 700; color: #78350f;'>{:.2f} triệu VNĐ</p>
+                                                    </div>
+                                                    """.format(gia_vnd/1_000_000), unsafe_allow_html=True)
+                                                
+                                        diff_pct = abs(price_pred - gia_vnd) / price_pred * 100
+                                                diff_amount = abs(price_pred - gia_vnd) / 1_000_000
+                                                
+                                                st.markdown("---")
+                                                st.markdown("#### 📊 Phân tích chi tiết")
+                                                
+                                                if gia_vnd > price_pred:
+                                                    st.warning(f"""
+                                                    **📈 Giá bạn nhập CAO HƠN {diff_pct:.1f}%** so với giá dự đoán hợp lý
+                                                    - Chênh lệch: **{diff_amount:.2f} triệu VNĐ**
+                                                    - Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ
+                                                    - Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ
                                                     
-                                                    <h4 style='color: #92400e; margin-top: 1.5rem;'>🎯 Nếu bạn là người BÁN:</h4>
-                                                    <ul style='color: #78350f; line-height: 2;'>
-                                                        <li>✅ Giải thích lý do giá cao (nếu có phụ kiện, tình trạng tốt...)</li>
-                                                        <li>✅ Cung cấp đầy đủ thông tin và hình ảnh</li>
-                                                        <li>✅ So sánh với các xe tương tự để chứng minh giá hợp lý</li>
-                                                        <li>⚠️ Nếu giá quá cao, cân nhắc điều chỉnh để phù hợp thị trường</li>
-                                                    </ul>
-                                                </div>
-                                                """, unsafe_allow_html=True)
+                                                    💡 **Gợi ý:** Nếu bạn là người mua, nên thương lượng hoặc tìm xe khác. Nếu bạn là người bán, có thể giá này hợp lý nếu xe có phụ kiện đặc biệt hoặc tình trạng tốt hơn.
+                                                    """)
+                                                else:
+                                                    st.info(f"""
+                                                    **📉 Giá bạn nhập THẤP HƠN {diff_pct:.1f}%** so với giá dự đoán hợp lý
+                                                    - Chênh lệch: **{diff_amount:.2f} triệu VNĐ**
+                                                    - Giá bạn nhập: {gia_vnd/1_000_000:.2f} triệu VNĐ
+                                                    - Giá dự đoán hợp lý: {price_pred/1_000_000:.2f} triệu VNĐ
+                                                    
+                                                    💡 **Gợi ý:** Đây có thể là một cơ hội tốt nếu bạn là người mua. Tuy nhiên, nên kiểm tra kỹ tình trạng xe và lịch sử sửa chữa.
+                                                    """)
+                                                
+                                                # Action recommendations
+                                                with st.expander("💡 **Khuyến nghị hành động**", expanded=False):
+                                                    st.markdown("""
+                                                    <div style='padding: 1rem; background: linear-gradient(135deg, rgba(255, 251, 235, 0.9) 0%, rgba(254, 243, 199, 0.9) 100%); border-radius: 0.75rem; border-left: 5px solid #f59e0b;'>
+                                                        <h4 style='color: #92400e; margin-top: 0;'>🎯 Nếu bạn là người MUA:</h4>
+                                                        <ul style='color: #78350f; line-height: 2;'>
+                                                            <li>✅ Kiểm tra kỹ tình trạng thực tế của xe</li>
+                                                            <li>✅ Xem lịch sử bảo dưỡng và sửa chữa</li>
+                                                            <li>✅ So sánh với các xe tương tự trên thị trường</li>
+                                                            <li>✅ Thương lượng giá nếu giá quá cao so với dự đoán</li>
+                                                            <li>⚠️ Cẩn thận với giá quá thấp - có thể có vấn đề ẩn</li>
+                                                        </ul>
+                                                        
+                                                        <h4 style='color: #92400e; margin-top: 1.5rem;'>🎯 Nếu bạn là người BÁN:</h4>
+                                                        <ul style='color: #78350f; line-height: 2;'>
+                                                            <li>✅ Giải thích lý do giá cao (nếu có phụ kiện, tình trạng tốt...)</li>
+                                                            <li>✅ Cung cấp đầy đủ thông tin và hình ảnh</li>
+                                                            <li>✅ So sánh với các xe tương tự để chứng minh giá hợp lý</li>
+                                                            <li>⚠️ Nếu giá quá cao, cân nhắc điều chỉnh để phù hợp thị trường</li>
+                                                        </ul>
+                                                    </div>
+                                                    """, unsafe_allow_html=True)
                             except Exception as e:
                                 # Silently fail - not critical
                                 pass
                         else:
-                                st.markdown("""
+                                    st.markdown("""
                                 <div style='text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.95) 100%); backdrop-filter: blur(10px); border-radius: 1.5rem; margin: 2rem 0; box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2); border: 3px solid #10b981;'>
                                     <div style='font-size: 4rem; margin-bottom: 1rem;'>✅</div>
                                     <h2 style='color: #059669; margin-bottom: 1rem; font-size: 2.5rem; font-weight: 700;'>Giá BÌNH THƯỜNG</h2>
