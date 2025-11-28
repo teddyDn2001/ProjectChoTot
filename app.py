@@ -1196,7 +1196,7 @@ def load_price_model():
         
         # Load model - check if it's a dict or direct model
         try:
-        model_data = joblib.load(PRICE_MODEL_PATH)
+            model_data = joblib.load(PRICE_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1212,7 +1212,7 @@ def load_price_model():
         # Load preprocessor
         try:
         preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-        except Exception as e:
+            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
         if isinstance(preprocessor_data, dict):
@@ -1244,7 +1244,7 @@ def load_anomaly_model():
         
         try:
         iso_data = joblib.load(ISO_MODEL_PATH)
-        except Exception as e:
+            iso_data = joblib.load(ISO_MODEL_PATH)
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
         # Check if it's a dict (saved with metadata) or direct model
@@ -1255,7 +1255,7 @@ def load_anomaly_model():
         
         try:
         preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-        except Exception as e:
+            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
         if isinstance(preprocessor_data, dict):
@@ -1700,53 +1700,53 @@ elif page == "💰 Dự đoán giá":
                     with st.spinner("🔄 Đang xử lý dự đoán giá... Vui lòng đợi trong giây lát"):
                 try:
                     # Get feature names from preprocessor - MUST use exact order
-                    from project1.config import PREPROCESSOR_PATH
-                    import joblib
-                    preprocessor_data = joblib.load(PREPROCESSOR_PATH)
-                    if isinstance(preprocessor_data, dict):
-                        numeric_features = preprocessor_data.get('numeric_features', [])
-                        categorical_features = preprocessor_data.get('categorical_features', [])
-                    else:
-                        # Fallback: use default feature names
-                        numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
-                        categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
+                            from project1.config import PREPROCESSOR_PATH
+                            import joblib
+                            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+                            if isinstance(preprocessor_data, dict):
+                            numeric_features = preprocessor_data.get('numeric_features', [])
+                            categorical_features = preprocessor_data.get('categorical_features', [])
+                            else:
+                            # Fallback: use default feature names
+                            numeric_features = ['so_km', 'nam_dang_ky', 'dung_tich_cc', 'trong_luong_kg', 'len_title', 'len_desc']
+                            categorical_features = ['thuong_hieu', 'dong_xe', 'tinh_trang', 'loai_xe', 'xuat_xu', 'tinh_thanh', 'quan']
                     
-                    # CRITICAL: Use exact feature order that preprocessor expects
-                    all_features = numeric_features + categorical_features
+                            # CRITICAL: Use exact feature order that preprocessor expects
+                            all_features = numeric_features + categorical_features
                     
-                    # Prepare input data - must match exact column names and order
-                    input_data = pd.DataFrame({
-                        'so_km': [so_km],
-                        'nam_dang_ky': [nam_dang_ky],
-                        'dung_tich_cc': [dung_tich_cc],
-                        'trong_luong_kg': [np.nan],
-                        'len_title': [len(dong_xe) if dong_xe else 0],
-                        'len_desc': [0],
-                        'thuong_hieu': [thuong_hieu],
-                        'dong_xe': [dong_xe if dong_xe else ""],
-                        'tinh_trang': [tinh_trang],
-                        'loai_xe': [loai_xe],
-                        'xuat_xu': [xuat_xu],
-                        'tinh_thanh': [tinh_thanh],
-                        'quan': [quan if quan else ""]
-                    }, columns=all_features)  # Ensure correct column order
+                            # Prepare input data - must match exact column names and order
+                            input_data = pd.DataFrame({
+                            'so_km': [so_km],
+                            'nam_dang_ky': [nam_dang_ky],
+                            'dung_tich_cc': [dung_tich_cc],
+                            'trong_luong_kg': [np.nan],
+                            'len_title': [len(dong_xe) if dong_xe else 0],
+                            'len_desc': [0],
+                            'thuong_hieu': [thuong_hieu],
+                            'dong_xe': [dong_xe if dong_xe else ""],
+                            'tinh_trang': [tinh_trang],
+                            'loai_xe': [loai_xe],
+                            'xuat_xu': [xuat_xu],
+                            'tinh_thanh': [tinh_thanh],
+                            'quan': [quan if quan else ""]
+                            }, columns=all_features)  # Ensure correct column order
                     
-                    # Check if model is a Pipeline (contains preprocessor)
-                    from sklearn.pipeline import Pipeline
-                    is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
+                            # Check if model is a Pipeline (contains preprocessor)
+                            from sklearn.pipeline import Pipeline
+                            is_pipeline = isinstance(model, Pipeline) or (hasattr(model, 'steps') and len(model.steps) > 0)
                     
-                    if is_pipeline:
-                        # Model already includes preprocessor, use raw input (13 features)
-                        prediction = model.predict(input_data)[0]
-                    else:
-                        # Model needs transformed input (278 features)
-                        X_transformed = preprocessor.transform(input_data)
+                            if is_pipeline:
+                            # Model already includes preprocessor, use raw input (13 features)
+                            prediction = model.predict(input_data)[0]
+                            else:
+                            # Model needs transformed input (278 features)
+                            X_transformed = preprocessor.transform(input_data)
                         
-                        # Handle sparse matrix
-                        if hasattr(X_transformed, 'toarray'):
+                            # Handle sparse matrix
+                            if hasattr(X_transformed, 'toarray'):
                             X_transformed = X_transformed.toarray()
                         
-                        prediction = model.predict(X_transformed)[0]
+                            prediction = model.predict(X_transformed)[0]
                     
                     # Validate prediction
                     if prediction <= 0 or np.isnan(prediction) or np.isinf(prediction):
