@@ -1196,7 +1196,7 @@ def load_price_model():
         
         # Load model - check if it's a dict or direct model
         try:
-            model_data = joblib.load(PRICE_MODEL_PATH)
+        model_data = joblib.load(PRICE_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1211,7 +1211,7 @@ def load_price_model():
         
         # Load preprocessor
         try:
-            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1243,7 +1243,7 @@ def load_anomaly_model():
             return None, None, f"❌ Không tìm thấy file preprocessor: {PREPROCESSOR_PATH}\n\n💡 Có thể preprocessor chưa được upload lên GitHub. Vui lòng kiểm tra lại."
         
         try:
-            iso_data = joblib.load(ISO_MODEL_PATH)
+        iso_data = joblib.load(ISO_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1254,7 +1254,7 @@ def load_anomaly_model():
             iso_model = iso_data
         
         try:
-            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1288,11 +1288,11 @@ def load_sample_data():
         for path in possible_paths:
             if path.exists():
                 try:
-                    # Load FULL dataset, not just sample
-                    df = pd.read_csv(path, low_memory=False)
+                # Load FULL dataset, not just sample
+                df = pd.read_csv(path, low_memory=False)
                     if len(df) == 0:
                         return None, f"❌ File dữ liệu rỗng: {path}"
-                    return df, None
+                return df, None
                 except Exception as e:
                     return None, f"❌ Lỗi khi đọc file {path}: {str(e)}"
         
@@ -1698,7 +1698,7 @@ elif page == "💰 Dự đoán giá":
                 else:
                     # Show loading state
                     with st.spinner("🔄 Đang xử lý dự đoán giá... Vui lòng đợi trong giây lát"):
-                        try:
+                try:
                     # Get feature names from preprocessor - MUST use exact order
                     from project1.config import PREPROCESSOR_PATH
                     import joblib
