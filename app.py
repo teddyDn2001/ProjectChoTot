@@ -1211,7 +1211,7 @@ def load_price_model():
         
         # Load preprocessor
         try:
-        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1243,7 +1243,7 @@ def load_anomaly_model():
             return None, None, f"❌ Không tìm thấy file preprocessor: {PREPROCESSOR_PATH}\n\n💡 Có thể preprocessor chưa được upload lên GitHub. Vui lòng kiểm tra lại."
         
         try:
-        iso_data = joblib.load(ISO_MODEL_PATH)
+            iso_data = joblib.load(ISO_MODEL_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file model: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
@@ -1254,7 +1254,7 @@ def load_anomaly_model():
             iso_model = iso_data
         
         try:
-        preprocessor_data = joblib.load(PREPROCESSOR_PATH)
+            preprocessor_data = joblib.load(PREPROCESSOR_PATH)
         except Exception as e:
             return None, None, f"❌ Lỗi khi đọc file preprocessor: {str(e)}\n\n💡 File có thể bị hỏng hoặc không tương thích."
         
