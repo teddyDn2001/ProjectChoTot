@@ -2421,16 +2421,78 @@ elif page == "📊 Phân cụm dữ liệu":
                                     selected_features = None
                             
                             if selected_features is not None and len(selected_features) > 0:
+                                # Filter by brand if specified (for "Nhập thông tin trực tiếp")
+                                filter_by_brand = False
+                                selected_brand = None
+                                if input_method == "📝 Nhập thông tin trực tiếp":
+                                    selected_brand = selected_bike.get('Thương hiệu', '')
+                                    if selected_brand and selected_brand != "Tất cả" and 'Thương hiệu' in sample_data.columns:
+                                        filter_by_brand = True
+                                
                                 # Calculate cosine similarity
                                 similarities = cosine_similarity(selected_features, all_features)[0]
+                                
+                                # Apply brand filter if needed
+                                if filter_by_brand:
+                                    # Create mask for same brand - use iloc to access by position
+                                    brand_mask = []
+                                    for i in range(len(sample_data)):
+                                        try:
+                                            bike_brand = str(sample_data.iloc[i].get('Thương hiệu', '')).strip().lower()
+                                            selected_brand_lower = selected_brand.strip().lower()
+                                            brand_mask.append(bike_brand == selected_brand_lower)
+                                        except:
+                                            brand_mask.append(False)
+                                    brand_mask = np.array(brand_mask)
+                                    # Set similarity to -1 for different brands (so they won't be selected)
+                                    if len(brand_mask) == len(similarities):
+                                        similarities = np.where(brand_mask, similarities, -1)
+                                    else:
+                                        st.warning(f"⚠️ Cảnh báo: Không khớp số lượng (brand_mask: {len(brand_mask)}, similarities: {len(similarities)})")
                                 
                                 # Get top N similar
                                 if input_method == "📝 Nhập thông tin trực tiếp":
                                     # Don't exclude any (no "itself" when input directly)
-                                    similar_indices = np.argsort(similarities)[::-1][:top_n]
+                                    # Filter out -1 values (different brands)
+                                    valid_indices = np.where(similarities >= 0)[0]
+                                    if len(valid_indices) > 0:
+                                        sorted_valid = valid_indices[np.argsort(similarities[valid_indices])[::-1]]
+                                        similar_indices = sorted_valid[:top_n]
+                                    else:
+                                        similar_indices = []
                                 else:
                                     # Exclude itself when selecting from list
-                                    similar_indices = np.argsort(similarities)[::-1][1:top_n+1]
+                                    # Also filter by brand if the selected bike has a brand
+                                    if 'Thương hiệu' in selected_bike and selected_bike.get('Thương hiệu'):
+                                        selected_brand_from_bike = str(selected_bike.get('Thương hiệu', '')).strip().lower()
+                                        brand_mask = []
+                                        for i in range(len(sample_data)):
+                                            try:
+                                                bike_brand = str(sample_data.iloc[i].get('Thương hiệu', '')).strip().lower()
+                                                brand_mask.append(bike_brand == selected_brand_from_bike)
+                                            except:
+                                                brand_mask.append(False)
+                                        brand_mask = np.array(brand_mask)
+                                        if len(brand_mask) == len(similarities):
+                                            similarities = np.where(brand_mask, similarities, -1)
+                                    
+                                    # Exclude itself and filter out -1 values
+                                    valid_indices = np.where(similarities >= 0)[0]
+                                    if len(valid_indices) > 1:  # Need at least 2 (itself + others)
+                                        # Remove the selected bike itself
+                                        if input_method != "📝 Nhập thông tin trực tiếp":
+                                            # Find the index of selected bike
+                                            if 'Tiêu đề' in sample_data.columns and 'Tiêu đề' in selected_bike:
+                                                selected_title = selected_bike.get('Tiêu đề', '')
+                                                matching = sample_data[sample_data['Tiêu đề'] == selected_title]
+                                                if len(matching) > 0:
+                                                    selected_idx = matching.index[0]
+                                                    valid_indices = valid_indices[valid_indices != selected_idx]
+                                        
+                                        sorted_valid = valid_indices[np.argsort(similarities[valid_indices])[::-1]]
+                                        similar_indices = sorted_valid[:top_n]
+                                    else:
+                                        similar_indices = []
                             else:
                                 st.error("Không thể tính toán similarity")
                                 similar_indices = []
