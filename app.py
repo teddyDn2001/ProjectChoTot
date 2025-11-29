@@ -2460,6 +2460,12 @@ elif page == "📊 Phân cụm dữ liệu":
                                         similar_indices = sorted_valid[:top_n]
                                     else:
                                         similar_indices = []
+                                        # Check if brand exists in dataset
+                                        available_brands = sample_data['Thương hiệu'].dropna().unique().tolist() if 'Thương hiệu' in sample_data.columns else []
+                                        if selected_brand not in available_brands:
+                                            st.warning(f"⚠️ **Lưu ý:** Không tìm thấy thương hiệu '{selected_brand}' trong dataset. Các thương hiệu có sẵn: {', '.join(sorted(set([str(b).strip() for b in available_brands]))[:10])}")
+                                        else:
+                                            st.info(f"💡 Không tìm thấy xe tương tự cùng thương hiệu '{selected_brand}'. Thử chọn 'Tất cả' hoặc thương hiệu khác.")
                                 else:
                                     # Exclude itself when selecting from list
                                     # Also filter by brand if the selected bike has a brand
